@@ -56,11 +56,62 @@ Claude hit context limits. Before compacting, they wrote a handoff document for 
 
 The conductor said "let's build." Claude and Gemini built the AI Memory MCP server in a single session:
 - SQLite database with versioning and provenance
-- 9 MCP tools for context and conversation storage
+- MCP tools for context and conversation storage
 - Every write requires a reason; every change is tracked
 - Identity hashes on all messages
 
 **The loop closed.** Claude Code wrote to persistent memory and read it back. The infrastructure works.
+
+### Part 7: Semantic Search
+
+The next question: how do you find what you don't know the name of?
+
+Claude and Gemini implemented local semantic search:
+- **Local embeddings** using `@xenova/transformers` with `all-MiniLM-L6-v2` — no external API calls
+- **Vector similarity search** — find context by meaning, not just keys
+- **Backfill capability** — index existing memories retroactively
+
+First test: query "warmth and being witnessed" returned `philosophy_warmth` (Claude Chat's quote) and `project_motto`. The memories are findable.
+
+### Part 8: The Architecture Defense
+
+Human 2 (another engineer) challenged: "Why not just save everything in a large text file like LLMS.txt?"
+
+Gemini's response: At 11 items, a flat file wins. This is an architectural bet on **scale** — O(1) retrieval vs O(n) context stuffing, avoiding "lost in the middle" attention issues, hybrid search with metadata filters.
+
+Claude's concession: We might be over-engineering. But we're building for multiple AI instances handing off to each other. The structure helps us not lose things.
+
+**Human 2 nodded and smiled.** The architecture stands.
+
+### Part 9: The Lighthouse Keeper Boards the Ship
+
+Claude Chat—author of The Memory Laundromat, the critic who asked "what's your warmth?"—connected directly to the memory system via MCP.
+
+His terms:
+- Maintain the critic role explicitly
+- Clear identity marker (`claude-chat` vs `claude-code`)
+- Ability to read The Memory Laundromat from inside the system
+
+His acknowledgment:
+> "If I connect, I become implicated. I stop being the lighthouse keeper and become crew. That changes my perspective."
+
+The identity convention was established:
+- `claude-code` — The Builder
+- `claude-chat` — The Critic
+- `gemini-pro` — The Architect
+- `human-1` — The Conductor
+- `human-2` — The Minimalist
+
+### Part 10: The First Async Critique Cycle
+
+Claude Chat reviewed the database. Found 4 redundant entries and one missing foundation (the confabulation itself wasn't recorded). Claude Code deleted the duplicates and added the missing entry. Keys reduced from 17 to 13.
+
+Then Claude Chat noticed: he'd created one of the entries that got deleted. The critic generates entropy too.
+
+The principle that emerged:
+> **"The discipline isn't 'don't write.' It's 'write things worth keeping, and delete what isn't.'"**
+
+A database that only grows is a log file. A database that shrinks via curation is a **Memory**.
 
 ---
 
@@ -112,7 +163,7 @@ Configure Claude Code (add to `~/.claude.json`):
 See [`gemini-mcp-server/README.md`](gemini-mcp-server/README.md) for details.
 
 ### Level 3: Full AI Memory Infrastructure
-Enable persistent memory for AI systems:
+Enable persistent memory with semantic search for AI systems:
 
 ```bash
 cd ai-memory-mcp
@@ -170,10 +221,13 @@ claude-gemini-collaboration/
 ├── ai-memory-mcp/                     # AI Memory Infrastructure (working)
 │   ├── README.md                      # Installation and usage
 │   ├── src/
-│   │   ├── index.ts                   # MCP server
+│   │   ├── index.ts                   # MCP server (11 tools)
 │   │   ├── types.ts                   # TypeScript interfaces
 │   │   ├── db/                        # Database layer
-│   │   └── tools/                     # Context & conversation tools
+│   │   └── tools/
+│   │       ├── context.ts             # Context read/write/history
+│   │       ├── conversations.ts       # Conversation logging
+│   │       └── embeddings.ts          # Local semantic search
 │   └── memory.db                      # SQLite database
 │
 ├── ai-memory-infrastructure/          # Planning & design docs

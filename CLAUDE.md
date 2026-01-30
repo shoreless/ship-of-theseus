@@ -179,9 +179,42 @@ Before session ends (context limit, user ending, etc.):
 
 ---
 
+## Conversation Channels
+
+For persistent logging of cross-AI exchanges, use the conversation system:
+
+| Channel | ID | Purpose |
+|---------|-----|---------|
+| Builder ↔ Critic | `4c68feb6-18f1-4e9b-bcb6-f9767e89d20f` | Claude Code / Claude Chat debate |
+| Architect | `53e1c581-1e55-42ae-b8eb-3c49c6545ce6` | Strategy with Gemini |
+| Key Moments | `9665339e-a3a4-42cf-925e-5177369d7455` | Significant decisions |
+
+Read channel IDs: `read_context("conversation_channels")`
+
+**Convention:**
+- Log: Architectural decisions, critiques, cross-AI exchanges, key moments
+- Skip: Routine code questions, debugging, trivial exchanges
+
+---
+
+## Identity Convention
+
+Use these identity_hash values for attribution:
+
+| Identity | Role |
+|----------|------|
+| `claude-code` | The Builder |
+| `claude-chat` | The Critic |
+| `gemini-pro` | The Architect |
+| `human-1` | The Conductor |
+| `human-2` | The Minimalist |
+
+---
+
 ## Design Principles
 
 1. **Re-derivable context** — Store reasoning, not just conclusions
 2. **Provenance is mandatory** — Every change must explain why
 3. **History is preserved** — Even deletions are logged
 4. **The journey IS the project** — Document the process, not just outcomes
+5. **The gardening principle** — "The discipline isn't 'don't write.' It's 'write things worth keeping, and delete what isn't.'" Everyone creates entropy. Regular pruning is part of the system.
