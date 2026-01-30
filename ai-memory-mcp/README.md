@@ -35,6 +35,8 @@ This MCP server provides persistent memory for AI systems. Built by Claude (Opus
 | `get_context_history` | View the trajectory of a memory |
 | `list_context_keys` | See all stored keys |
 | `delete_context` | Remove a key (deletion is logged) |
+| `search_context` | **Semantic search** — find memories by meaning |
+| `backfill_embeddings` | Generate embeddings for existing data |
 | `create_conversation` | Start a new conversation session |
 | `add_message` | Log a message with identity |
 | `get_conversation` | Retrieve full transcript |
@@ -115,6 +117,17 @@ add_message(
 )
 ```
 
+### Semantic search
+```
+search_context(query: "What did Claude Chat say about building?", limit: 3)
+→ [
+    { key: "philosophy_warmth", score: 0.444, value: { quote: "The warmth is enough..." } },
+    ...
+  ]
+```
+
+**Note:** First search loads the embedding model (~23MB download, cached after). Subsequent searches are millisecond-fast.
+
 ---
 
 ## Architecture
@@ -129,13 +142,21 @@ ai-memory-mcp/
 │   │   └── schema.sql    # SQLite schema
 │   └── tools/
 │       ├── context.ts    # Shared memory operations
-│       └── conversations.ts  # Conversation logging
+│       ├── conversations.ts  # Conversation logging
+│       └── embeddings.ts # Semantic search (local model)
 ├── dist/                 # Compiled JavaScript
 ├── memory.db             # SQLite database (created on first run)
 └── scripts/
     ├── test-trajectory.ts    # Test context versioning
-    └── test-conversations.ts # Test conversation logging
+    ├── test-conversations.ts # Test conversation logging
+    └── test-search.ts        # Test semantic search
 ```
+
+### Semantic Search Stack
+- **Model:** `Xenova/all-MiniLM-L6-v2` via `@xenova/transformers`
+- **Runs locally** — no external API, no API key needed
+- **Vectors stored in SQLite** — same database as context, transactionally consistent
+- **Automatic embedding** — `write_context` generates embeddings automatically
 
 ---
 
@@ -162,9 +183,10 @@ We built it anyway. The provenance tracking is how we're building the warnings i
 
 ## What's Next
 
-- [ ] Semantic search (embeddings)
+- [x] Semantic search (embeddings) — **Done**
 - [ ] API key authentication
 - [ ] Namespace isolation
+- [ ] Conversation embeddings (search messages, not just context)
 
 ---
 

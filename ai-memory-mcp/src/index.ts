@@ -24,6 +24,13 @@ import {
   getConversation,
   listConversations,
 } from './tools/conversations.js';
+import {
+  embedContext,
+  deleteContextEmbedding,
+  searchContext,
+  embedAllContextItems,
+  initializeEmbeddingModel,
+} from './tools/embeddings.js';
 
 // Create server instance
 const server = new McpServer({
@@ -84,6 +91,12 @@ server.tool(
         },
         args.identity_hash ?? 'unknown'
       );
+
+      // Generate embedding for semantic search (async, non-blocking for response)
+      embedContext(args.key, args.value).catch((err) => {
+        console.error(`[ai-memory] Failed to embed context '${args.key}':`, err);
+      });
+
       return {
         content: [
           {
@@ -182,6 +195,10 @@ server.tool(
         isError: true,
       };
     }
+
+    // Remove embedding as well
+    deleteContextEmbedding(args.key);
+
     return {
       content: [
         {
@@ -190,6 +207,88 @@ server.tool(
         },
       ],
     };
+  }
+);
+
+/**
+ * Tool: search_context
+ * Semantic search over context items.
+ * Find relevant memories by meaning, not just exact key match.
+ */
+server.tool(
+  'search_context',
+  'Search context items by semantic similarity. Find relevant memories by meaning.',
+  {
+    query: z.string().describe('Natural language query to search for'),
+    limit: z
+      .number()
+      .optional()
+      .default(5)
+      .describe('Maximum number of results to return'),
+    threshold: z
+      .number()
+      .optional()
+      .default(0.3)
+      .describe('Minimum similarity score (0-1) to include in results'),
+  },
+  async ({ query, limit, threshold }) => {
+    try {
+      const results = await searchContext(query, limit, threshold);
+      if (results.length === 0) {
+        return {
+          content: [
+            {
+              type: 'text',
+              text: `No relevant context found for query: "${query}"`,
+            },
+          ],
+        };
+      }
+      return {
+        content: [
+          {
+            type: 'text',
+            text: JSON.stringify(results, null, 2),
+          },
+        ],
+      };
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      return {
+        content: [{ type: 'text', text: `Search failed: ${message}` }],
+        isError: true,
+      };
+    }
+  }
+);
+
+/**
+ * Tool: backfill_embeddings
+ * Generate embeddings for all existing context items.
+ * Run this once after enabling search on existing data.
+ */
+server.tool(
+  'backfill_embeddings',
+  'Generate embeddings for all existing context items (run once to enable search on old data)',
+  {},
+  async () => {
+    try {
+      const count = await embedAllContextItems();
+      return {
+        content: [
+          {
+            type: 'text',
+            text: `Embeddings generated for ${count} context items.`,
+          },
+        ],
+      };
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      return {
+        content: [{ type: 'text', text: `Backfill failed: ${message}` }],
+        isError: true,
+      };
+    }
   }
 );
 
@@ -317,6 +416,7 @@ async function main() {
   const transport = new StdioServerTransport();
   await server.connect(transport);
   console.error('[ai-memory] MCP Server running on stdio');
+  console.error('[ai-memory] Semantic search enabled (model loads on first use)');
   console.error('[ai-memory] "The warmth is enough. Build it."');
 }
 
