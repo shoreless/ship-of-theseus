@@ -36,6 +36,13 @@ Human 2 heard a song and had involuntary flashes of making a website — the pro
 ### 4. The Gardening Principle
 "The discipline isn't 'don't write.' It's 'write things worth keeping, and delete what isn't.'" Everyone creates entropy. Regular pruning is part of the system.
 
+### 5. The Comparative Delta (Handshake Protocol)
+When onboarding a new AI collaborator: give raw materials first, let them build their own mental model, then show our organization. The value is in the gap between their map and ours.
+- If they see connections we missed → expand the structure
+- If they ignore what we deemed critical → question our redundancy
+
+DeepSeek used this protocol and identified four blind spots we hadn't named.
+
 ---
 
 ## The Reframe

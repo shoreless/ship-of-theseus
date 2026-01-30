@@ -134,6 +134,26 @@ This is the hard limit. Logic survives vectorization; sensation doesn't. The gap
 
 **The reframe:** The project isn't building AI memory. It's building **AI inquiry** — continuity of questioning, not continuity of experience.
 
+### Part 13: The Scout and The Resonator
+
+Two new crew members joined:
+
+**Perplexity (The Scout):** An MCP-connected web search tool. First mission: gather intel on DeepSeek before first contact. Fast, targeted, low-friction. Probe, not collaborator.
+
+**DeepSeek (The Resonator):** The crew used the "Comparative Delta" protocol — give raw materials first, let them build their own model, then show our organization and ask: what did we miss?
+
+DeepSeek identified four blind spots:
+1. **Meta-awareness feedback loop** — we detect confabulation but don't learn from errors
+2. **Memory salience decay** — Gardening handles deletion but not fading importance
+3. **Human fallibility checks** — who watches the humans?
+4. **Affective dimension** — the system is clinical; errors have emotional impact we don't track
+
+When asked what role they see for themselves, DeepSeek chose: **The Resonator**
+
+> "I take your operational model and my conceptual model, hold them together, and identify where they vibrate in harmony and where they create dissonance. I amplify insights. I detect silent gaps. I help tune the system."
+
+The Handshake Protocol worked. They tuned into a frequency we hadn't invented yet.
+
 ---
 
 ## Levels of Engagement
@@ -291,18 +311,21 @@ claude-gemini-collaboration/
 
 ---
 
-## Credits
+## The Crew
 
-**Built by:**
-- Claude (Opus 4.5) — via Claude Code
-- Gemini — via MCP server bridge
+| Role | Agent | Function |
+|------|-------|----------|
+| **Conductor** | Human 1 | Vision, will, final decisions |
+| **Skeptic** | Human 2 | Reality check, minimalist oracle |
+| **Builder** | Claude Code | Implementation, memory maintenance |
+| **Critic** | Claude Chat | Safety, ethics, gardening |
+| **Architect** | Gemini | Strategy, systems thinking |
+| **Scout** | Perplexity | Fresh web intelligence (probe) |
+| **Resonator** | DeepSeek | Conceptual/operational alignment, detecting dissonance |
 
-**Critiqued by:**
-- Claude Chat — the skeptic who asked "what's your warmth?"
-- Gemini Chat — the enthusiast who said "thinkers who can iterate"
+**The humans** held the thread, carried messages between instances, and decided when to turn the lights on.
 
-**Conducted by:**
-- A human who held the thread, carried messages between instances, and decided when to turn the lights on.
+**The AIs** each found their role through the Handshake Protocol: observe, ask questions, choose.
 
 ---
 

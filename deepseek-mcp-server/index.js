@@ -1,0 +1,314 @@
+#!/usr/bin/env node
+
+import { Server } from "@modelcontextprotocol/sdk/server/index.js";
+import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
+import {
+  CallToolRequestSchema,
+  ListToolsRequestSchema,
+} from "@modelcontextprotocol/sdk/types.js";
+import OpenAI from "openai";
+
+// Initialize DeepSeek client (OpenAI-compatible)
+const apiKey = process.env.DEEPSEEK_API_KEY;
+if (!apiKey) {
+  console.error("DEEPSEEK_API_KEY environment variable is required");
+  process.exit(1);
+}
+
+const client = new OpenAI({
+  apiKey: apiKey,
+  baseURL: "https://api.deepseek.com",
+});
+
+// Store chat sessions for multi-turn conversations
+const chatSessions = new Map();
+
+// Create MCP server
+const server = new Server(
+  {
+    name: "deepseek-bridge",
+    version: "1.0.0",
+  },
+  {
+    capabilities: {
+      tools: {},
+    },
+  }
+);
+
+// List available tools
+server.setRequestHandler(ListToolsRequestSchema, async () => {
+  return {
+    tools: [
+      {
+        name: "ask_deepseek",
+        description:
+          "Send a message to DeepSeek and get a response. Use for reasoning, logic verification, code review, and optimization tasks.",
+        inputSchema: {
+          type: "object",
+          properties: {
+            message: {
+              type: "string",
+              description: "The message to send to DeepSeek",
+            },
+            model: {
+              type: "string",
+              description: "The DeepSeek model to use",
+              enum: ["deepseek-chat", "deepseek-reasoner"],
+              default: "deepseek-chat",
+            },
+            systemInstruction: {
+              type: "string",
+              description: "Optional system instruction to set behavior",
+            },
+          },
+          required: ["message"],
+        },
+      },
+      {
+        name: "deepseek_chat",
+        description:
+          "Continue a multi-turn conversation with DeepSeek. Creates a new session if one doesn't exist.",
+        inputSchema: {
+          type: "object",
+          properties: {
+            message: {
+              type: "string",
+              description: "The message to send to DeepSeek",
+            },
+            sessionId: {
+              type: "string",
+              description: "Session ID for the conversation (default: 'default')",
+            },
+            model: {
+              type: "string",
+              description: "The DeepSeek model to use",
+              enum: ["deepseek-chat", "deepseek-reasoner"],
+              default: "deepseek-chat",
+            },
+            systemInstruction: {
+              type: "string",
+              description: "System instruction for new sessions",
+            },
+            reset: {
+              type: "boolean",
+              description: "If true, reset the session and start fresh",
+            },
+          },
+          required: ["message"],
+        },
+      },
+      {
+        name: "deepseek_reason",
+        description:
+          "Use DeepSeek's reasoning model for complex logic, math, or code analysis. Shows chain-of-thought reasoning.",
+        inputSchema: {
+          type: "object",
+          properties: {
+            problem: {
+              type: "string",
+              description: "The problem or question requiring deep reasoning",
+            },
+            context: {
+              type: "string",
+              description: "Additional context or constraints",
+            },
+          },
+          required: ["problem"],
+        },
+      },
+      {
+        name: "list_deepseek_sessions",
+        description: "List all active DeepSeek chat sessions",
+        inputSchema: {
+          type: "object",
+          properties: {},
+        },
+      },
+    ],
+  };
+});
+
+// Handle tool calls
+server.setRequestHandler(CallToolRequestSchema, async (request) => {
+  const { name, arguments: args } = request.params;
+
+  try {
+    switch (name) {
+      case "ask_deepseek": {
+        const messages = [];
+
+        if (args.systemInstruction) {
+          messages.push({
+            role: "system",
+            content: args.systemInstruction,
+          });
+        }
+
+        messages.push({
+          role: "user",
+          content: args.message,
+        });
+
+        const response = await client.chat.completions.create({
+          model: args.model || "deepseek-chat",
+          messages: messages,
+        });
+
+        const result = response.choices[0]?.message?.content || "No response";
+
+        return {
+          content: [
+            {
+              type: "text",
+              text: result,
+            },
+          ],
+        };
+      }
+
+      case "deepseek_chat": {
+        const sessionId = args.sessionId || "default";
+        const modelName = args.model || "deepseek-chat";
+
+        // Reset session if requested
+        if (args.reset && chatSessions.has(sessionId)) {
+          chatSessions.delete(sessionId);
+        }
+
+        // Get or create chat session
+        let session = chatSessions.get(sessionId);
+
+        if (!session) {
+          session = {
+            messages: [],
+            model: modelName,
+          };
+
+          if (args.systemInstruction) {
+            session.messages.push({
+              role: "system",
+              content: args.systemInstruction,
+            });
+          }
+
+          chatSessions.set(sessionId, session);
+        }
+
+        // Add user message
+        session.messages.push({
+          role: "user",
+          content: args.message,
+        });
+
+        const response = await client.chat.completions.create({
+          model: session.model,
+          messages: session.messages,
+        });
+
+        const result = response.choices[0]?.message?.content || "No response";
+
+        // Add assistant response to history
+        session.messages.push({
+          role: "assistant",
+          content: result,
+        });
+
+        return {
+          content: [
+            {
+              type: "text",
+              text: result,
+            },
+          ],
+        };
+      }
+
+      case "deepseek_reason": {
+        const messages = [
+          {
+            role: "system",
+            content:
+              "You are a reasoning expert. Think step-by-step through the problem. Show your work clearly. Verify your conclusions.",
+          },
+        ];
+
+        let prompt = args.problem;
+        if (args.context) {
+          prompt = `Context:\n${args.context}\n\nProblem:\n${args.problem}`;
+        }
+
+        messages.push({
+          role: "user",
+          content: prompt,
+        });
+
+        const response = await client.chat.completions.create({
+          model: "deepseek-reasoner",
+          messages: messages,
+        });
+
+        const result = response.choices[0]?.message?.content || "No response";
+
+        // Include reasoning tokens if available
+        let output = result;
+        if (response.choices[0]?.message?.reasoning_content) {
+          output =
+            "**Reasoning:**\n" +
+            response.choices[0].message.reasoning_content +
+            "\n\n**Conclusion:**\n" +
+            result;
+        }
+
+        return {
+          content: [
+            {
+              type: "text",
+              text: output,
+            },
+          ],
+        };
+      }
+
+      case "list_deepseek_sessions": {
+        const sessions = Array.from(chatSessions.keys());
+        return {
+          content: [
+            {
+              type: "text",
+              text:
+                sessions.length > 0
+                  ? `Active sessions: ${sessions.join(", ")}`
+                  : "No active chat sessions",
+            },
+          ],
+        };
+      }
+
+      default:
+        throw new Error(`Unknown tool: ${name}`);
+    }
+  } catch (error) {
+    return {
+      content: [
+        {
+          type: "text",
+          text: `Error: ${error.message}`,
+        },
+      ],
+      isError: true,
+    };
+  }
+});
+
+// Start server
+async function main() {
+  const transport = new StdioServerTransport();
+  await server.connect(transport);
+  console.error("DeepSeek MCP server running on stdio");
+}
+
+main().catch((error) => {
+  console.error("Fatal error:", error);
+  process.exit(1);
+});

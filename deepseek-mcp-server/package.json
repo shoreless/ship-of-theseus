@@ -1,0 +1,20 @@
+{
+  "name": "deepseek-mcp-server",
+  "version": "1.0.0",
+  "description": "MCP server that bridges to DeepSeek API",
+  "type": "module",
+  "main": "index.js",
+  "bin": {
+    "deepseek-mcp-server": "./index.js"
+  },
+  "scripts": {
+    "start": "node index.js"
+  },
+  "keywords": ["mcp", "deepseek", "ai", "reasoning"],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.25.3",
+    "openai": "^4.77.0"
+  }
+}

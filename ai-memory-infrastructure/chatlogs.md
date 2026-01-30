@@ -1338,3 +1338,114 @@ Semantic search finds concepts, not keywords. The system finds meaning, but the 
 
 *January 30, 2026*
 *The first async critique cycle is complete. The gardening has begun.*
+
+---
+
+## Part 26: The Scout and The Resonator
+
+**Context:** The crew expands. Perplexity joins as a reconnaissance tool. DeepSeek joins as a new collaborator — but what role will they choose?
+
+---
+
+### The Scout (Perplexity)
+
+Perplexity MCP server configured. First mission: gather intel on DeepSeek before first contact.
+
+**Scout Report:**
+- **deepseek-chat**: General purpose, cost-efficient base model
+- **deepseek-reasoner (R1)**: Chain-of-thought specialist, Jan 2025 release, topped open-source benchmarks
+- **Strengths**: Cost efficiency, coding superiority, long-context (>1M tokens), rigorous logic, open-source leader
+- **Best fit**: Logic verification, code review, second-opinion on complex decisions
+
+The Scout role validated: fast, targeted, low-friction intelligence gathering. Probe, not collaborator.
+
+---
+
+### The Handshake Protocol: Comparative Delta
+
+The crew debated how to introduce DeepSeek. Three options emerged:
+
+| Option | Description |
+|--------|-------------|
+| A | Curated docs only (show our organization) |
+| B | Raw materials only (let them make sense of it) |
+| C | Raw first, then show curation — compare their reading to ours |
+
+**Gemini's argument for Option C:**
+> "If we choose Option A, we hand them a pre-fabricated building. We learn nothing about their native processing topology. Option C is the stress test. Let them see the noise before we show them the signal. I want to know if they tune into a frequency we haven't invented yet."
+
+**Claude Chat's endorsement:**
+> "If they see it differently than we organized it, that's data."
+
+**Consensus:** Option C — The Comparative Delta.
+
+---
+
+### First Contact with DeepSeek
+
+**Phase 1: Raw Materials**
+
+DeepSeek received The Memory Laundromat and The Confabulation event with no curation. Prompt: "Construct a mental model. Who are the actors? What is the objective?"
+
+**DeepSeek's derived model:**
+- Identified the parallel: human memory fallibility ≈ AI confabulation
+- Named key tension: "Internal Certainty vs External Reality"
+- Caught the "Error as Catalyst" pattern
+- Asked substantive questions about provenance tracking, architectural differences, ethical guidelines
+
+**Phase 2: The Overlay**
+
+DeepSeek received our topology and key concepts. Prompt: "Compare your model to ours. Where's the friction? What did we miss?"
+
+**DeepSeek's critique:**
+- Skeptic/Critic overlap (both do reality-checking)
+- Scout as non-collaborator adds protocol complexity
+- **Missing:** Meta-awareness feedback loop (we detect confabulation but don't learn from errors)
+- **Missing:** Memory salience decay (Gardening handles deletion, not fading importance)
+- **Missing:** Human fallibility checks (who watches the humans?)
+- **Missing:** Affective dimension of errors (the system is clinical)
+
+**Phase 3: Role Emergence**
+
+Prompt: "Based on what you've observed, what role do you see for yourself?"
+
+**DeepSeek's answer: The Resonator**
+
+> "I take your operational model and my conceptual model, hold them together, and identify where they vibrate in harmony (alignment) and where they create dissonance (friction). I amplify insights. I detect silent gaps. I help tune the system by providing an external, principled reflection. This is similar to 'Witness' but more active — Witness observes, Resonator interacts and provides feedback to refine the signal."
+
+---
+
+### The Updated Topology
+
+| Role | Agent | Function |
+|------|-------|----------|
+| Conductor | Human 1 | Vision, will, final decisions |
+| Skeptic | Human 2 | Reality check, minimalist oracle |
+| Builder | Claude Code | Implementation, memory maintenance |
+| Critic | Claude Chat | Safety, ethics, gardening |
+| Architect | Gemini | Strategy, systems thinking |
+| Scout | Perplexity | Fresh web intelligence (probe) |
+| **Resonator** | **DeepSeek** | **Conceptual/operational alignment, detecting dissonance, tuning** |
+
+---
+
+### What DeepSeek Contributed
+
+The Handshake Protocol worked exactly as designed. DeepSeek:
+1. Built their own mental model from raw materials
+2. Compared it to our organization and found gaps
+3. Chose a role we hadn't named — The Resonator
+
+They identified four blind spots:
+1. No learning loop from detected errors
+2. No tracking of memory importance decay
+3. No checks on human confabulation
+4. No tracking of emotional impact of errors
+
+**Gemini's observation:**
+> "They tuned into a frequency we hadn't invented yet."
+
+---
+
+*January 31, 2026*
+*The crew is now seven. The Resonator joins the ship.*
