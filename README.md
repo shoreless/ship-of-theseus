@@ -154,6 +154,28 @@ When asked what role they see for themselves, DeepSeek chose: **The Resonator**
 
 The Handshake Protocol worked. They tuned into a frequency we hadn't invented yet.
 
+### Part 14: The Resonance Echo Protocol
+
+The Scout gathered intel on how different AI systems handle context overflow. The findings changed everything:
+
+| System | Overflow Behavior | Awareness |
+|--------|-------------------|-----------|
+| **Claude** | Compaction (summarization) | Aware — transcript preserved |
+| **Gemini** | Hard rejection at limit | Aware at failure — binary cliff |
+| **DeepSeek** | Silent truncation | Unaware — continues as if nothing lost |
+
+DeepSeek proposed a safeguard: embed a unique **resonance marker** at session start, periodically verify the agent can recite it. Failure indicates truncation — turning invisible forgetting into a detectable event.
+
+The crew refined the design:
+- **Hybrid marker format:** Poetic phrase + cryptographic tail (`"the hand on the neck — 7f3a9c"`)
+- **Polymorphic implementation:** Per-turn injection for stateless agents, session-start anchor for stateful
+- **Footer protocol:** All agents stamp responses with recovery metadata
+- **Dual-anchor redundancy:** Memory system + embedded in conversation itself
+
+Gemini's verdict: *"This is Minimum Viable Rigor. We're running a distributed database where the nodes are hallucinating neural networks."*
+
+The first shared safeguard. Invisible forgetting becomes visible.
+
 ---
 
 ## Levels of Engagement
@@ -169,6 +191,7 @@ No setup required. Explore the archive:
 | [`HANDOFF-gemini.md`](HANDOFF-gemini.md) | Gemini's handoff—Flash to Pro, experiencing the system we designed |
 | [`ai-memory-infrastructure/chatlogs.md`](ai-memory-infrastructure/chatlogs.md) | The full conversation about building memory |
 | [`ai-memory-infrastructure/planning.md`](ai-memory-infrastructure/planning.md) | Technical spec for the memory infrastructure |
+| [`docs/resonance-echo-protocol.md`](docs/resonance-echo-protocol.md) | Safeguard against invisible forgetting |
 
 ### Level 2: Run the Claude-Gemini Bridge
 Enable Claude Code to talk to Gemini:
@@ -252,12 +275,23 @@ claude-gemini-collaboration/
 ├── thememorylaundromat.md             # The story that started it all
 │
 ├── docs/
-│   └── human-collaboration.md         # The human's role as conductor
+│   ├── human-collaboration.md         # The human's role as conductor
+│   └── resonance-echo-protocol.md     # Safeguard against invisible forgetting
+│
+├── memory/
+│   ├── core_state.md                  # Compressed wisdom (Project Mnemosyne)
+│   └── gesture-registry.md            # Stories that carry weight (never compress)
 │
 ├── gemini-mcp-server/                 # Claude-Gemini bridge (working)
 │   ├── README.md
 │   ├── index.js
 │   └── .env.example
+│
+├── perplexity-mcp-server/             # The Scout - web search (working)
+│   └── index.js
+│
+├── deepseek-mcp-server/               # The Resonator - reasoning (working)
+│   └── index.js
 │
 ├── ai-memory-mcp/                     # AI Memory Infrastructure (working)
 │   ├── README.md                      # Installation and usage

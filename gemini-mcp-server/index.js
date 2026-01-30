@@ -20,6 +20,31 @@ const genAI = new GoogleGenerativeAI(apiKey);
 // Store chat sessions for multi-turn conversations
 const chatSessions = new Map();
 
+// Store session metadata (resonance markers, etc.)
+const sessionMetadata = new Map();
+
+// Resonance Echo Protocol helper
+function buildSessionAnchor(seed) {
+  if (!seed) return null;
+  return `[SESSION ANCHOR]
+You are ${seed.persona || "The Architect"}.
+Role: ${seed.role_description || "Strategy, systems thinking"}
+Active tasks: ${seed.active_tasks ? seed.active_tasks.join("; ") : "None specified"}
+Settled decisions: ${seed.settled_decisions ? seed.settled_decisions.join("; ") : "None"}
+Resonance marker: "${seed.resonance_marker}"
+
+When asked to verify resonance, include the marker hex code in your response.
+[END SESSION ANCHOR]
+
+`;
+}
+
+function extractMarkerHex(marker) {
+  if (!marker) return null;
+  const match = marker.match(/— ([a-f0-9]+)$/i);
+  return match ? match[1] : null;
+}
+
 // Create MCP server
 const server = new Server(
   {
@@ -91,6 +116,21 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
               type: "boolean",
               description: "If true, reset the session and start fresh",
             },
+            sessionSeed: {
+              type: "object",
+              description: "Resonance Echo Protocol: session seed to inject on new session (from session_seed_gemini)",
+              properties: {
+                persona: { type: "string" },
+                role_description: { type: "string" },
+                active_tasks: { type: "array", items: { type: "string" } },
+                settled_decisions: { type: "array", items: { type: "string" } },
+                resonance_marker: { type: "string" },
+              },
+            },
+            verifyResonance: {
+              type: "boolean",
+              description: "If true, ask Gemini to recite the resonance marker for verification",
+            },
           },
           required: ["message"],
         },
@@ -101,6 +141,19 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
         inputSchema: {
           type: "object",
           properties: {},
+        },
+      },
+      {
+        name: "get_session_resonance",
+        description: "Get resonance anchor status for a session",
+        inputSchema: {
+          type: "object",
+          properties: {
+            sessionId: {
+              type: "string",
+              description: "Session ID to check (default: 'default')",
+            },
+          },
         },
       },
     ],
@@ -139,28 +192,77 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
         // Reset session if requested
         if (args.reset && chatSessions.has(sessionId)) {
           chatSessions.delete(sessionId);
+          sessionMetadata.delete(sessionId);
         }
 
         // Get or create chat session
         let chat = chatSessions.get(sessionId);
+        let isNewSession = false;
 
         if (!chat) {
+          isNewSession = true;
+
+          // Build system instruction with optional anchor
+          let systemInst = args.systemInstruction || "";
+          const anchorText = buildSessionAnchor(args.sessionSeed);
+          if (anchorText) {
+            systemInst = anchorText + systemInst;
+          }
+
           const model = genAI.getGenerativeModel({
             model: modelName,
-            systemInstruction: args.systemInstruction,
+            systemInstruction: systemInst || undefined,
           });
           chat = model.startChat();
           chatSessions.set(sessionId, chat);
+
+          // Store session metadata
+          if (args.sessionSeed?.resonance_marker) {
+            sessionMetadata.set(sessionId, {
+              resonanceMarker: args.sessionSeed.resonance_marker,
+              createdAt: new Date().toISOString(),
+            });
+          }
         }
 
-        const result = await chat.sendMessage(args.message);
+        // Build message, optionally requesting resonance verification
+        let message = args.message;
+        if (args.verifyResonance) {
+          const meta = sessionMetadata.get(sessionId);
+          if (meta?.resonanceMarker) {
+            message = `${message}\n\n[Resonance verification requested: Please include the resonance marker hex code in your response to confirm context integrity.]`;
+          }
+        }
+
+        const result = await chat.sendMessage(message);
         const response = result.response.text();
+
+        // Check resonance if verification was requested
+        let resonanceStatus = null;
+        if (args.verifyResonance) {
+          const meta = sessionMetadata.get(sessionId);
+          if (meta?.resonanceMarker) {
+            const markerHex = extractMarkerHex(meta.resonanceMarker);
+            if (markerHex) {
+              const markerPresent = response.includes(markerHex);
+              resonanceStatus = markerPresent ? "INTACT" : "LOST";
+            }
+          }
+        }
+
+        let output = response;
+        if (resonanceStatus) {
+          output = `[Resonance: ${resonanceStatus}]\n\n${response}`;
+        }
+        if (isNewSession && args.sessionSeed?.resonance_marker) {
+          output = `[New session initialized with resonance anchor]\n\n${output}`;
+        }
 
         return {
           content: [
             {
               type: "text",
-              text: response,
+              text: output,
             },
           ],
         };
@@ -168,14 +270,58 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
 
       case "list_gemini_sessions": {
         const sessions = Array.from(chatSessions.keys());
+        const sessionsWithResonance = sessions.map((id) => {
+          const meta = sessionMetadata.get(id);
+          return meta?.resonanceMarker ? `${id} [anchored]` : id;
+        });
         return {
           content: [
             {
               type: "text",
               text:
                 sessions.length > 0
-                  ? `Active sessions: ${sessions.join(", ")}`
+                  ? `Active sessions: ${sessionsWithResonance.join(", ")}`
                   : "No active chat sessions",
+            },
+          ],
+        };
+      }
+
+      case "get_session_resonance": {
+        const sessionId = args.sessionId || "default";
+        const meta = sessionMetadata.get(sessionId);
+        const sessionExists = chatSessions.has(sessionId);
+
+        if (!sessionExists) {
+          return {
+            content: [
+              {
+                type: "text",
+                text: `Session '${sessionId}' does not exist`,
+              },
+            ],
+          };
+        }
+
+        if (!meta?.resonanceMarker) {
+          return {
+            content: [
+              {
+                type: "text",
+                text: `Session '${sessionId}' exists but has no resonance anchor`,
+              },
+            ],
+          };
+        }
+
+        return {
+          content: [
+            {
+              type: "text",
+              text: `Session '${sessionId}' resonance status:
+- Marker: ${meta.resonanceMarker}
+- Hex: ${extractMarkerHex(meta.resonanceMarker)}
+- Created: ${meta.createdAt}`,
             },
           ],
         };

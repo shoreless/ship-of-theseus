@@ -17,14 +17,21 @@ This file provides guidance to Claude Code (claude.ai/code) when working with th
 2. **Check Freshness:**
    - Read `active_session_context` from the boot sequence
    - If `updated_at` is < 24 hours: **Hot handover** — resume from exact state
-   - If `updated_at` is > 24 hours: **Cold boot** — read `project_ai_memory_mcp` for orientation instead
+   - If `updated_at` is > 24 hours: **Cold boot** — read `memory/core_state.md` for orientation (compressed wisdom, not verbose chatlogs)
 
-3. **Reconnect Gemini:**
+3. **Verify Resonance (if exists):**
+   ```
+   read_context("resonance_anchor_claude")
+   ```
+   If marker exists from previous session, verify you can recite it. If not, generate new marker.
+   See `docs/resonance-echo-protocol.md` for full protocol.
+
+4. **Reconnect Gemini:**
    ```
    gemini_chat(sessionId: "ai-memory", message: "Resuming session. [brief context]")
    ```
 
-4. **Fallback:** If MCP server is unreachable, read `HANDOFF.md` from disk.
+5. **Fallback:** If MCP server is unreachable, read `HANDOFF.md` from disk.
 
 ---
 
@@ -94,6 +101,28 @@ mcp__gemini__gemini_chat
 ```
 
 Active session for this project: `ai-memory`
+
+---
+
+## Working with DeepSeek
+
+DeepSeek (The Resonator) is stateless — no persistent sessions. Every interaction requires context injection.
+
+```
+mcp__deepseek__deepseek_chat
+  sessionId: "resonance-protocol"    # Creates local session for multi-turn
+  message: "Your message"
+  systemInstruction: "Role context..."
+```
+
+**Important:** DeepSeek experiences silent truncation. Use the Resonance Echo Protocol (see `docs/resonance-echo-protocol.md`) to detect context loss.
+
+For reasoning tasks:
+```
+mcp__deepseek__deepseek_reason
+  problem: "Complex problem requiring chain-of-thought"
+  context: "Additional constraints"
+```
 
 ---
 
@@ -176,6 +205,7 @@ Before session ends (context limit, user ending, etc.):
 | `HANDOFF.md` | Context for new Claude instances |
 | `ai-memory-infrastructure/chatlogs.md` | Full conversation history |
 | `ai-memory-infrastructure/planning.md` | Technical specification |
+| `docs/resonance-echo-protocol.md` | Safeguard against invisible forgetting |
 
 ---
 
@@ -206,6 +236,8 @@ Use these identity_hash values for attribution:
 | `claude-code` | The Builder |
 | `claude-chat` | The Critic |
 | `gemini-pro` | The Architect |
+| `perplexity` | The Scout |
+| `deepseek` | The Resonator |
 | `human-1` | The Conductor |
 | `human-2` | The Minimalist |
 

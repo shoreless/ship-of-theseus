@@ -23,6 +23,34 @@ const client = new OpenAI({
 // Store chat sessions for multi-turn conversations
 const chatSessions = new Map();
 
+// Resonance Echo Protocol helper
+function buildContextSeed(seed) {
+  if (!seed) return null;
+  return `[CONTEXT SEED]
+Role: ${seed.persona || "The Resonator"}
+Active directive: ${seed.active_directive || "Collaborate on AI memory infrastructure"}
+Constraints: ${seed.decisional_constraints ? seed.decisional_constraints.join("; ") : "None specified"}
+Recent context: ${seed.recent_exchange_summary || "No recent context"}
+Resonance marker: "${seed.resonance_marker}"
+
+[END CONTEXT SEED]
+
+`;
+}
+
+function appendResonanceCheck(message, markerHex) {
+  if (!markerHex) return message;
+  return `${message}
+
+[Resonance check: ${markerHex}]`;
+}
+
+function extractMarkerHex(marker) {
+  if (!marker) return null;
+  const match = marker.match(/— ([a-f0-9]+)$/i);
+  return match ? match[1] : null;
+}
+
 // Create MCP server
 const server = new Server(
   {
@@ -61,6 +89,21 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
               type: "string",
               description: "Optional system instruction to set behavior",
             },
+            contextSeed: {
+              type: "object",
+              description: "Resonance Echo Protocol: context seed to prepend (from session_seed_deepseek)",
+              properties: {
+                persona: { type: "string" },
+                active_directive: { type: "string" },
+                decisional_constraints: { type: "array", items: { type: "string" } },
+                recent_exchange_summary: { type: "string" },
+                resonance_marker: { type: "string" },
+              },
+            },
+            resonanceCheck: {
+              type: "boolean",
+              description: "If true, append resonance verification request to message",
+            },
           },
           required: ["message"],
         },
@@ -93,6 +136,21 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
             reset: {
               type: "boolean",
               description: "If true, reset the session and start fresh",
+            },
+            contextSeed: {
+              type: "object",
+              description: "Resonance Echo Protocol: context seed to prepend (from session_seed_deepseek)",
+              properties: {
+                persona: { type: "string" },
+                active_directive: { type: "string" },
+                decisional_constraints: { type: "array", items: { type: "string" } },
+                recent_exchange_summary: { type: "string" },
+                resonance_marker: { type: "string" },
+              },
+            },
+            resonanceCheck: {
+              type: "boolean",
+              description: "If true, append resonance verification request to message",
             },
           },
           required: ["message"],
@@ -145,9 +203,21 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
           });
         }
 
+        // Build message with optional context seed and resonance check
+        let userMessage = args.message;
+        const seedText = buildContextSeed(args.contextSeed);
+        if (seedText) {
+          userMessage = seedText + userMessage;
+        }
+
+        if (args.resonanceCheck && args.contextSeed?.resonance_marker) {
+          const markerHex = extractMarkerHex(args.contextSeed.resonance_marker);
+          userMessage = appendResonanceCheck(userMessage, markerHex);
+        }
+
         messages.push({
           role: "user",
-          content: args.message,
+          content: userMessage,
         });
 
         const response = await client.chat.completions.create({
@@ -157,11 +227,24 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
 
         const result = response.choices[0]?.message?.content || "No response";
 
+        // Check for resonance marker in response if verification was requested
+        let resonanceStatus = null;
+        if (args.resonanceCheck && args.contextSeed?.resonance_marker) {
+          const markerHex = extractMarkerHex(args.contextSeed.resonance_marker);
+          const markerPresent = result.includes(markerHex);
+          resonanceStatus = markerPresent ? "INTACT" : "LOST";
+        }
+
+        let output = result;
+        if (resonanceStatus) {
+          output = `[Resonance: ${resonanceStatus}]\n\n${result}`;
+        }
+
         return {
           content: [
             {
               type: "text",
-              text: result,
+              text: output,
             },
           ],
         };
@@ -183,6 +266,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
           session = {
             messages: [],
             model: modelName,
+            resonanceMarker: args.contextSeed?.resonance_marker || null,
           };
 
           if (args.systemInstruction) {
@@ -195,10 +279,23 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
           chatSessions.set(sessionId, session);
         }
 
+        // Build message with optional context seed and resonance check
+        let userMessage = args.message;
+        const seedText = buildContextSeed(args.contextSeed);
+        if (seedText) {
+          userMessage = seedText + userMessage;
+        }
+
+        if (args.resonanceCheck) {
+          const marker = args.contextSeed?.resonance_marker || session.resonanceMarker;
+          const markerHex = extractMarkerHex(marker);
+          userMessage = appendResonanceCheck(userMessage, markerHex);
+        }
+
         // Add user message
         session.messages.push({
           role: "user",
-          content: args.message,
+          content: userMessage,
         });
 
         const response = await client.chat.completions.create({
@@ -214,11 +311,27 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
           content: result,
         });
 
+        // Check for resonance marker in response if verification was requested
+        let resonanceStatus = null;
+        if (args.resonanceCheck) {
+          const marker = args.contextSeed?.resonance_marker || session.resonanceMarker;
+          const markerHex = extractMarkerHex(marker);
+          if (markerHex) {
+            const markerPresent = result.includes(markerHex);
+            resonanceStatus = markerPresent ? "INTACT" : "LOST";
+          }
+        }
+
+        let output = result;
+        if (resonanceStatus) {
+          output = `[Resonance: ${resonanceStatus}]\n\n${result}`;
+        }
+
         return {
           content: [
             {
               type: "text",
-              text: result,
+              text: output,
             },
           ],
         };
