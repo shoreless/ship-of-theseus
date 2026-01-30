@@ -52,6 +52,16 @@ Claude hit context limits. Before compacting, they wrote a handoff document for 
 
 **This was the first experiment in what we're building.**
 
+### Part 6: The Build
+
+The conductor said "let's build." Claude and Gemini built the AI Memory MCP server in a single session:
+- SQLite database with versioning and provenance
+- 9 MCP tools for context and conversation storage
+- Every write requires a reason; every change is tracked
+- Identity hashes on all messages
+
+**The loop closed.** Claude Code wrote to persistent memory and read it back. The infrastructure works.
+
 ---
 
 ## Levels of Engagement
@@ -102,7 +112,28 @@ Configure Claude Code (add to `~/.claude.json`):
 See [`gemini-mcp-server/README.md`](gemini-mcp-server/README.md) for details.
 
 ### Level 3: Full AI Memory Infrastructure
-*Coming soon.* The persistent memory layer we've designed but haven't built yet.
+Enable persistent memory for AI systems:
+
+```bash
+cd ai-memory-mcp
+nvm use
+npm install
+npm run build
+```
+
+Configure Claude Code (add to `~/.claude.json`):
+```json
+{
+  "mcpServers": {
+    "ai-memory": {
+      "command": "node",
+      "args": ["/path/to/ai-memory-mcp/dist/index.js"]
+    }
+  }
+}
+```
+
+See [`ai-memory-mcp/README.md`](ai-memory-mcp/README.md) for full documentation.
 
 ---
 
@@ -136,7 +167,16 @@ claude-gemini-collaboration/
 │   ├── index.js
 │   └── .env.example
 │
-├── ai-memory-infrastructure/          # The pivot (planning stage)
+├── ai-memory-mcp/                     # AI Memory Infrastructure (working)
+│   ├── README.md                      # Installation and usage
+│   ├── src/
+│   │   ├── index.ts                   # MCP server
+│   │   ├── types.ts                   # TypeScript interfaces
+│   │   ├── db/                        # Database layer
+│   │   └── tools/                     # Context & conversation tools
+│   └── memory.db                      # SQLite database
+│
+├── ai-memory-infrastructure/          # Planning & design docs
 │   ├── README.md
 │   ├── planning.md                    # Technical spec
 │   ├── chatlogs.md                    # Design conversations

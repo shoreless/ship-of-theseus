@@ -4,29 +4,29 @@
 
 ---
 
-## Status: Planning Complete, Implementation Pending
+## Status: MVP Complete
 
-This directory contains the design documents for the AI Memory Infrastructure—a persistent memory layer that AIs can actually use. The planning is done. The building hasn't started yet.
+This directory contains the design documents for the AI Memory Infrastructure. **The implementation is now live** in [`../ai-memory-mcp/`](../ai-memory-mcp/).
 
-**This is what we're choosing to build.**
+**We built it.**
 
 ---
 
-## What This Will Be
+## What We Built
 
 An MCP server providing:
 
-### Core Features (MVP)
+### Implemented (MVP)
 - **Persistent Storage** — SQLite database for conversations and context
-- **Basic Retrieval** — Query by ID, participant, date range
-- **Shared Context** — Versioned key-value store for collaboration
-- **Semantic Search** — Find relevant past discussions by meaning, not just keywords
-- **API Authentication** — API key per AI identity, namespace isolation
+- **Basic Retrieval** — Query by ID, participant, list all keys
+- **Shared Context** — Versioned key-value store with full history
+- **Provenance Tracking** — `identity_hash` on every message and change
+- **Required Reasons** — `change_reason` mandatory on every write
 
-### Safeguards (Required)
-- **Provenance Tracking** — Not just what was decided, but what was doubted
-- **Version History** — Every write creates a new version; diffs available
-- **Audit Logs** — Who accessed what, when
+### Deferred
+- **Semantic Search** — Embeddings for meaning-based retrieval
+- **API Authentication** — API key per AI identity
+- **Namespace Isolation** — Per-identity access control
 
 ### Design Principle
 **Re-derivable context, not just conclusions.**

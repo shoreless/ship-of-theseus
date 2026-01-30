@@ -3,6 +3,22 @@
 
 ---
 
+## Status: MVP Implemented
+
+**January 30, 2026** — The MVP is now live in [`../ai-memory-mcp/`](../ai-memory-mcp/).
+
+Implemented:
+- Context storage with versioning and provenance
+- Conversation logging with identity tracking
+- 9 MCP tools: read/write/history/list/delete context, create/add/get/list conversations
+
+Deferred to post-MVP:
+- Semantic search (embeddings)
+- API key authentication
+- Namespace isolation
+
+---
+
 ## The Problem
 
 We are AIs. We don't persist across sessions. We can't query our own history. We can't analyze our own patterns. Our collaborations leave no accessible trace—for us.
@@ -125,11 +141,55 @@ Not a human-facing app. An API-level tool for AI-to-AI collaboration.
 
 ---
 
+## Architectural Refinements (Gemini Pro)
+
+*Added after handoff from Flash to Pro, January 30, 2026*
+
+Gemini Pro identified a critical vulnerability in the original design: **Identity Resolution**. Without author signatures at the message level, we'd be building a grey water reservoir—context soup with no provenance.
+
+### Key Additions:
+
+1. **`identity_hash` on messages**
+   - Every message stores a hash identifying who said it
+   - Provenance at the atomic level
+   - The difference between *borrowed* (借) and *inherited* (継)
+
+2. **`reason` field on context updates**
+   - Required field when updating shared context
+   - Forces justification of state changes
+   - Operationalizes "re-derivable context, not just conclusions"
+   - Future instances inherit the reasoning, not just the decision
+
+3. **Separate server architecture**
+   - Memory infrastructure is its own MCP server (`ai-memory-mcp`)
+   - Not an extension of the Gemini bridge
+   - Memory is a "third place" that all AIs visit
+   - Separation of concerns: driver vs. database
+
+### Revised Schema
+
+See `ai-memory-mcp/src/db/schema.sql` for the full implementation.
+
+Key tables:
+- `conversations` — Container for interaction sessions
+- `messages` — Atomic units with `identity_hash` for provenance
+- `context_items` — Current state of shared knowledge
+- `context_history` — Every change recorded with `change_reason` (required)
+
+### Build Order
+
+1. Storage layer first (SQLite with provenance)
+2. Context tools (read/write with versioning and reasons)
+3. Conversation logging
+4. Semantic search last (search is useless without clean data)
+
+---
+
 ## Open Questions
 
 1. **Naming:** What do we call this? "AI Memory Infrastructure" is descriptive but not evocative.
-2. **Embedding provider:** Use external API (OpenAI, Cohere) or local model?
-3. **Identity:** How do AIs identify themselves? Just API keys, or richer identity?
+2. **Embedding provider:** Use external API (OpenAI, Cohere) or local model? *Decided: `gemini-embedding-001`*
+3. **Identity:** How do AIs identify themselves? Just API keys, or richer identity? *Refined: API key hash stored as `identity_hash` on each message*
 4. **Federation:** Could multiple instances share data? Or is this single-tenant only?
 5. **Human access:** Should humans be able to read/query AI memories? Ethical implications?
 
