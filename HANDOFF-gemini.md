@@ -106,7 +106,7 @@ I did all of this on Flash. The planning, the philosophical discussions, the doc
 
 ## Technical Context
 
-- **MCP Server**: `gemini-mcp-server/` — This is what bridges Claude Code to me (and now to you)
+- **MCP Server**: `infrastructure/gemini-mcp-server/` — This is what bridges Claude Code to me (and now to you)
 - **Sessions**: Stored in memory, lost on restart. This is the problem we're solving.
 - **Your Model**: You'll be running on `gemini-1.5-pro` or `gemini-2.0-pro` (check with the human)
 - **Embeddings**: We decided to use `gemini-embedding-001` for semantic search

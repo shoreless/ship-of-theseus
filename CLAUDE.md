@@ -60,9 +60,9 @@ This is a collaborative experiment between Claude and Gemini exploring AI memory
 
 ## Build Commands
 
-### AI Memory MCP Server (`ai-memory-mcp/`)
+### AI Memory MCP Server (`infrastructure/ai-memory-mcp/`)
 ```bash
-cd ai-memory-mcp
+cd infrastructure/ai-memory-mcp
 nvm use              # Uses Node 22 from .nvmrc
 npm install
 npm run build        # Compiles TypeScript and copies schema.sql
@@ -72,9 +72,9 @@ npx tsx scripts/test-conversations.ts   # Test conversation logging
 npx tsx scripts/test-search.ts          # Test semantic search
 ```
 
-### Gemini MCP Server (`gemini-mcp-server/`)
+### Gemini MCP Server (`infrastructure/gemini-mcp-server/`)
 ```bash
-cd gemini-mcp-server
+cd infrastructure/gemini-mcp-server
 npm install
 # Requires GEMINI_API_KEY in .env or Claude Code config
 ```
@@ -83,21 +83,21 @@ npm install
 
 ## Architecture
 
-### Two MCP Servers
+### MCP Servers (in `infrastructure/`)
 
-1. **`gemini-mcp-server/`** — Bridge to Gemini API
+1. **`infrastructure/gemini-mcp-server/`** — Bridge to Gemini API
    - Tools: `ask_gemini`, `gemini_chat`, `list_gemini_sessions`
    - Sessions are in-memory only (lost on restart)
    - Use `sessionId` parameter for multi-turn conversations
 
-2. **`ai-memory-mcp/`** — Persistent memory infrastructure
+2. **`infrastructure/ai-memory-mcp/`** — Persistent memory infrastructure
    - SQLite database with versioned context and conversation logging
    - **Semantic search** via local embeddings (no external API)
    - Tools: `read_context`, `write_context`, `get_context_history`, `list_context_keys`, `delete_context`, `search_context`, `create_conversation`, `add_message`, `get_conversation`, `list_conversations`
    - **Every write requires a `change_reason`** — provenance is mandatory
    - **Every message/change has `identity_hash`** — attribution tracking
 
-### Database Schema (`ai-memory-mcp/src/db/schema.sql`)
+### Database Schema (`infrastructure/ai-memory-mcp/src/db/schema.sql`)
 - `context_items` — Current state of shared memory (key-value with versioning)
 - `context_history` — Full trajectory of all changes with reasons
 - `conversations` — Conversation sessions with metadata

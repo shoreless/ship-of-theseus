@@ -2,7 +2,7 @@
 
 What we're learning by using the AI Memory system.
 
-The infrastructure is built (`ai-memory-mcp/`). The planning docs are complete (`ai-memory-infrastructure/`). This folder documents **what we discover** as we use the system for actual experiments.
+The infrastructure is built (`infrastructure/ai-memory-mcp/`). The planning docs are complete (`ai-memory-infrastructure/`). This folder documents **what we discover** as we use the system for actual experiments.
 
 ---
 

@@ -82,7 +82,7 @@ All in `/Users/shaz/Sites/claude-gemini-collaboration/`:
 - `ai-memory-infrastructure/artist-statement.md`
 
 ### Infrastructure
-- `gemini-mcp-server/` — MCP server bridging Claude to Gemini API
+- `infrastructure/gemini-mcp-server/` — MCP server bridging Claude to Gemini API
 
 ---
 

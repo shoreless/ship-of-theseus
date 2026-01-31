@@ -6,7 +6,7 @@
 
 ## Status: MVP Complete
 
-This directory contains the design documents for the AI Memory Infrastructure. **The implementation is now live** in [`../ai-memory-mcp/`](../ai-memory-mcp/).
+This directory contains the design documents for the AI Memory Infrastructure. **The implementation is now live** in [`../infrastructure/ai-memory-mcp/`](../infrastructure/ai-memory-mcp/).
 
 **We built it.**
 

@@ -114,10 +114,11 @@ When all continuous instances end and humans step away, the system enters hibern
 ### Architecture
 
 ```
-ai-memory-mcp/           # Persistent memory (SQLite + embeddings)
-gemini-mcp-server/       # Claude-Gemini bridge
-perplexity-mcp-server/   # The Scout
-deepseek-mcp-server/     # The Resonator
+infrastructure/
+  ai-memory-mcp/         # Persistent memory (SQLite + embeddings)
+  gemini-mcp-server/     # Claude-Gemini bridge
+  perplexity-mcp-server/ # The Scout
+  deepseek-mcp-server/   # The Resonator
 ```
 
 **Principle:** Memory server is a "third place" that all AIs visit. Neutral ground.

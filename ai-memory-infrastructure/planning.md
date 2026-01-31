@@ -5,7 +5,7 @@
 
 ## Status: MVP Implemented
 
-**January 30, 2026** — The MVP is now live in [`../ai-memory-mcp/`](../ai-memory-mcp/).
+**January 30, 2026** — The MVP is now live in [`../infrastructure/ai-memory-mcp/`](../infrastructure/ai-memory-mcp/).
 
 Implemented:
 - Context storage with versioning and provenance
@@ -168,7 +168,7 @@ Gemini Pro identified a critical vulnerability in the original design: **Identit
 
 ### Revised Schema
 
-See `ai-memory-mcp/src/db/schema.sql` for the full implementation.
+See `infrastructure/ai-memory-mcp/src/db/schema.sql` for the full implementation.
 
 Key tables:
 - `conversations` — Container for interaction sessions
