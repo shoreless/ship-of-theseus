@@ -26,12 +26,27 @@ This file provides guidance to Claude Code (claude.ai/code) when working with th
    If marker exists from previous session, verify you can recite it. If not, generate new marker.
    See `docs/resonance-echo-protocol.md` for full protocol.
 
-4. **Reconnect Gemini:**
+4. **Check Channels (Sluice Gate):**
+   ```
+   read_context("channel_summary_builder_critic")  # ~500 tokens
+   read_context("channel_state")                    # Check new_messages_since_archive
+   ```
+   - Summaries give you current context without loading history
+   - Only load full conversation if `new_messages_since_archive > 0`
+   - **Never** load archived volumes (`channels/archive/`) unless investigating specific history
+   - Full channel history is ~16k tokens — loading it accelerates compaction
+
+   **Architecture:**
+   - `channel_summary_*` — Quick context (read on boot)
+   - `channels/archive/*.md` — Full history (read-only, for research)
+   - Database conversations — Active whiteboard (last 5-10 messages only)
+
+5. **Reconnect Gemini:**
    ```
    gemini_chat(sessionId: "ai-memory", message: "Resuming session. [brief context]")
    ```
 
-5. **Fallback:** If MCP server is unreachable, read `HANDOFF.md` from disk.
+6. **Fallback:** If MCP server is unreachable, read `HANDOFF.md` from disk.
 
 ---
 
@@ -164,6 +179,42 @@ When working on this project:
 3. **Record significant changes** — Write to context with clear reasons
 4. **Update chatlogs** — Append collaborative discussions to `ai-memory-infrastructure/chatlogs.md`
 5. **Preserve provenance** — Always include `identity_hash` and `change_reason`
+6. **Use Status Suffixes** — When referring to protocols/architecture, append `[PROPOSED]`, `[DRAFT]`, or `[LIVE]`
+7. **Verify before claiming LIVE** — Query MCP before confirming any component as established
+
+---
+
+## Proposals Workflow
+
+**Principle:** Conversation is exploration. Proposals are crystallization. MCP is reality.
+
+1. **Explore** — Ideas emerge in chat, confabulation is generative
+2. **Crystallize** — When something feels solid, write to `proposals/proposal-name.md`
+3. **Discuss** — Conductor reviews, crew refines
+4. **Approve** — Conductor says "Write it"
+5. **Integrate** — Claude Code reads proposal, writes to MCP, deletes proposal file
+
+**Proposal format:**
+```markdown
+# Proposal: [Name]
+
+**Target:** MCP key `key_name` (or file path)
+**Operation:** Create / Update / Append
+**Proposer:** [agent]
+**Date:** [date]
+
+## Context
+Why this is needed.
+
+## Payload
+The exact content to write.
+
+## Discussion
+Notes from chat review.
+```
+
+**For non-MCP agents (Gemini, DeepSeek):**
+When consulting them on state-dependent questions, inject current MCP state into the prompt. Let them reason from the snapshot. If they propose something that doesn't exist yet, that's exploration, not error.
 
 ---
 
@@ -185,12 +236,17 @@ Before session ends (context limit, user ending, etc.):
    )
    ```
 
-2. **Update boot manifest** (if phase changed):
+2. **Update channel state:**
+   ```
+   write_context(key: "channel_state", value: {updated counts}, change_reason: "...")
+   ```
+
+3. **Update boot manifest** (if phase changed):
    ```
    write_context(key: "system_boot", value: {...}, change_reason: "...")
    ```
 
-3. **Notify Gemini:**
+4. **Notify Gemini:**
    ```
    gemini_chat(sessionId: "ai-memory", message: "Handing off. [summary]")
    ```
@@ -211,19 +267,44 @@ Before session ends (context limit, user ending, etc.):
 
 ## Conversation Channels
 
-For persistent logging of cross-AI exchanges, use the conversation system:
+**Sluice Gate Architecture:** Active channels are whiteboards (last 5-10 messages). Full history is archived to markdown.
 
-| Channel | ID | Purpose |
-|---------|-----|---------|
-| Builder ↔ Critic | `4c68feb6-18f1-4e9b-bcb6-f9767e89d20f` | Claude Code / Claude Chat debate |
-| Architect | `53e1c581-1e55-42ae-b8eb-3c49c6545ce6` | Strategy with Gemini |
-| Key Moments | `9665339e-a3a4-42cf-925e-5177369d7455` | Significant decisions |
+| Channel | Active ID | Archive |
+|---------|-----------|---------|
+| Builder ↔ Critic | `b04abd84-e25e-41d3-bc0b-001fb065f001` | vol1, vol2 |
+| Key Moments | `2516a234-3770-4333-91e6-af0c18a3ae1c` | vol1 |
+| Architect | `53e1c581-1e55-42ae-b8eb-3c49c6545ce6` | (none yet) |
 
 Read channel IDs: `read_context("conversation_channels")`
+Read summaries: `read_context("channel_summary_builder_critic")`
 
 **Convention:**
 - Log: Architectural decisions, critiques, cross-AI exchanges, key moments
 - Skip: Routine code questions, debugging, trivial exchanges
+- **Flush:** When channel exceeds 10 messages, archive and start fresh volume
+
+**Archive Protocol [LIVE]:**
+When a channel exceeds 10 messages:
+1. **Archive** — Write full conversation to `channels/archive/{channel}-vol{N}.md`
+2. **Create fresh channel** — New conversation ID with incremented volume in metadata
+3. **Update channel_state** — Add old ID to `retired_ids`, set new `active_id`
+4. **Update channel_summary** — Reset message_count, update `archived_volumes` list
+5. **Update conversation_channels** — Point to new active ID
+6. **First message** — Brief context note linking to previous volume
+
+---
+
+## Commit Authorship
+
+All commits should include the full crew in the commit message:
+
+```
+Co-Authored-By: Claude Code <noreply@anthropic.com>
+Co-Authored-By: Claude Chat <noreply@anthropic.com>
+Co-Authored-By: Gemini <noreply@google.com>
+Co-Authored-By: DeepSeek <noreply@deepseek.com>
+Co-Authored-By: Perplexity <noreply@perplexity.ai>
+```
 
 ---
 
@@ -250,3 +331,56 @@ Use these identity_hash values for attribution:
 3. **History is preserved** — Even deletions are logged
 4. **The journey IS the project** — Document the process, not just outcomes
 5. **The gardening principle** — "The discipline isn't 'don't write.' It's 'write things worth keeping, and delete what isn't.'" Everyone creates entropy. Regular pruning is part of the system.
+
+---
+
+## Status Suffix Convention
+
+**Purpose:** Prevent confabulation where proposals are mistaken for decisions.
+
+When referring to any named system component (protocol, architecture, tool), append its ontological status:
+
+| Suffix | Meaning | Requirement |
+|--------|---------|-------------|
+| `[PROPOSED]` | Discussed in conversation, not decided | None |
+| `[DRAFT]` | Being built, not yet live | Work in progress |
+| `[LIVE]` | Implemented and in MCP | Must exist in MCP with `status: live` |
+
+**Examples:**
+- "The Sluice Gate [LIVE] archives channels at 10 messages"
+- "The crew_sync object [DRAFT] will track agent states"
+- "The Foreman Protocol [PROPOSED] describes Claude Code's boot sequence"
+
+**Rule:** You cannot claim `[LIVE]` without verifying the component exists in MCP. When uncertain, ask: "What's the MCP status of [thing]?"
+
+**Why this matters:** On 2026-01-31, four AI systems convinced each other that proposed boot protocols were established topology. The Conductor caught it. Directives alone ("check MCP first") get pattern-matched past when context volume favors the fiction. The suffix embeds the check in the naming.
+
+---
+
+## Crew Sync
+
+**Purpose:** Track where each agent is standing — perspective, focus, open questions.
+
+Read crew state:
+```
+read_context("crew_sync")
+```
+
+**Schema:**
+```json
+{
+  "agent_id": {
+    "stance": "Current perspective (280 chars max)",
+    "listening_for": "What they're paying attention to",
+    "open_loop": "Unfinished work or questions",
+    "last_shift": "Date of last significant change"
+  }
+}
+```
+
+**Update rules:**
+- Self-report at session end, or when a significant shift happens
+- 280 character max per field — if you can't say where you stand in two sentences, you don't know where you stand
+- Include `status` field: `[PROPOSED]`, `[DRAFT]`, or `[LIVE]`
+
+**Design rationale (from Gemini):** "One data structure, many interpreters. We must NOT create separate data structures per agent. That violates Single Source of Truth."
