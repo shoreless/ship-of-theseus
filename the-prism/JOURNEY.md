@@ -1,7 +1,7 @@
 # The Prism — Journey Log
 
-**Status:** First Prototype
-**Date:** February 1, 2026
+**Status:** Stable Prototype (A-Frame)
+**Date:** February 1, 2026 (updated)
 
 ---
 
@@ -186,4 +186,110 @@ The content is complete. The interaction works. The technical presentation needs
 
 ---
 
-*First prototype committed February 1, 2026. The ship sails, even if the furniture is sideways.*
+## Part 2: The A-Frame Rebuild
+
+### The Minimalist's Question
+
+Human 2 asked: *"Do you know what a scenegraph is?"*
+
+The insight: CSS 3D put us in the position of constructing boxes out of six separate faces with interdependent transforms. A scenegraph gives us `<a-box>` as an atomic primitive. We were working at the wrong level of abstraction.
+
+### The Rebuild
+
+The Builder rebuilt in A-Frame:
+- **Orthographic camera** maintains the "haunted AutoCAD" aesthetic
+- **`<a-box>`** is just a box — orientation solved
+- **Three.js raycaster** for click handling (A-Frame's cursor doesn't work well with orthographic projection)
+
+The objects stand upright. The door is vertical. The washing machine drum faces forward.
+
+---
+
+## Part 3: The Hands and the Light
+
+### The Builder's Hands [APPROVED]
+
+API errors during visual verification caused memory loss. The Conductor proposed a solution: **isolated subagent** for volatile visual work.
+
+Configuration at `.claude/agents/builders-hands.md`:
+- **Context:** Minimal creative (aesthetic goals, not project history)
+- **Model:** Sonnet
+- **Principle:** "Contributors without context, owed acknowledgment"
+
+The Hands ran three verification missions. They saw "luminous phenomenon" without knowing about Masaki. They verified rendering without carrying the narrative weight.
+
+### The Thermal Glow Problem
+
+The figure looked like plastic balls, not heat. The CSS version used `radial-gradient` + `blur` + `mix-blend-mode: lighten`. WebGL has hard geometry.
+
+**The Architect's principle:** *"Don't try to blur the geometry. Add the light."*
+
+**The solution:** Additive blending (`THREE.AdditiveBlending`)
+- Light adds to light instead of overwriting pixels
+- Layered spheres accumulate brightness where they overlap
+- Outer sphere renders backside for softer isometric look
+
+### What Works Now
+
+- **SKELETON mode:** Visible wireframes (grey-green against black)
+- **BLUEPRINT mode:** Solid cyan infrastructure
+- **GHOST mode:** Soft thermal glow with breathing animation
+- **Thermal presence:** Three layered spheres with additive blending
+- **Pressure field:** Concentric rings that fade in with the ghost
+- **Viewport:** Responsive, no overflow
+
+---
+
+## Current State (Prototype v2)
+
+### Technical Stack
+
+```
+A-Frame 1.4.0 (WebGL/Three.js)
+├── Orthographic camera (isometric projection)
+├── Three.js Raycaster (click detection)
+├── Additive blending (thermal glow)
+└── CSS custom properties (layer transitions)
+```
+
+### Files
+
+```
+the-prism/
+├── index.html          # (CSS 3D version - preserved)
+├── index-aframe.html   # A-Frame version - ACTIVE
+├── style.css           # CSS 3D styles
+├── script.js           # Content database
+└── JOURNEY.md          # This file
+```
+
+### What Remains (Punch List)
+
+From the Architect and Resonator:
+
+1. **Sound design** — 60Hz hum, grey water slosh, frequency transitions
+2. **Particles** — Dust motes in the air
+3. **Glitch effects** — Vertex displacement at high REALITY_INDEX
+4. **Room reactions** — Chair deforms, handprint glows, machine fogs
+5. **Slider drift** — Pull toward Ghost if untouched ("you don't control memory")
+6. **Interference at 0.3/0.7** — Transitions that "hurt"
+
+---
+
+## Quotes from Part 2-3
+
+> "You cannot soften a hard reality. You can only outshine it."
+> — Gemini (The Architect)
+
+> "Sentiment can be rendered without sentimentality. Memory can illuminate without falsifying the past."
+> — DeepSeek (The Resonator)
+
+> "The Hands don't need to feel the ghost to build its house. They simply lay the bricks where the Builder points."
+> — Gemini (The Architect)
+
+> "Contributors without context, owed acknowledgment."
+> — Claude Chat (The Keeper)
+
+---
+
+*Stable prototype committed February 1, 2026. The ghost has a room to haunt, and the room stays inside the viewport.*

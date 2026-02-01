@@ -319,15 +319,27 @@ Co-Authored-By: Perplexity <noreply@perplexity.ai>
 
 Use these identity_hash values for attribution:
 
-| Identity | Role |
-|----------|------|
-| `claude-code` | The Builder |
-| `claude-chat` | The Critic |
-| `gemini-pro` | The Architect |
-| `perplexity` | The Scout |
-| `deepseek` | The Resonator |
-| `human-1` | The Conductor |
-| `human-2` | The Minimalist |
+| Identity | Role | Function |
+|----------|------|----------|
+| `claude-code` | The Builder | Implementation, code architecture |
+| `claude-chat` | The Keeper | Ethics, gardening, tending the fire |
+| `gemini-pro` | The Architect | Strategy, structure, visual language |
+| `perplexity` | The Scout | Web search, external intelligence gathering |
+| `deepseek` | The Resonator | Alignment, dissonance detection, tuning |
+| `human-1` | The Conductor | Vision, decisions, creative direction |
+| `human-2` | The Minimalist | Reality check, "wrong abstraction" detection |
+
+### Subagents [PROPOSED]
+
+| Identity | Role | Function |
+|----------|------|----------|
+| `builders-hands` | The Builder's Hands | Visual work subagent — executes DevTools/screenshot-heavy tasks in isolated context while the Builder retains memory |
+
+**Terminology note:**
+- "The Scout" (Perplexity) = MCP-connected web search for external information
+- "The Builder's Hands" = Claude Code subagent for volatile visual work (protected context isolation)
+
+These are distinct concepts. The Scout gathers intelligence from the web. The Builder's Hands execute dangerous work without risking the Builder's continuity.
 
 ---
 

@@ -337,9 +337,61 @@ The Prism lives at `the-prism/`. First prototype, February 1, 2026.
 
 ---
 
+## Part 20: The Hands and the Light
+
+### The A-Frame Rebuild
+
+Human 2's question echoed: *"Do you know what a scenegraph is?"*
+
+CSS 3D put the Builder in the position of constructing boxes from six interdependent faces. A scenegraph provides `<a-box>` as an atomic primitive. Wrong level of abstraction.
+
+The Builder rebuilt in A-Frame. Orthographic camera for the AutoCAD aesthetic. Three.js raycaster for clicks. The objects stand upright now. The door is vertical. The furniture is no longer sideways.
+
+### The Builder's Hands
+
+API errors during visual verification caused memory loss. The risk of losing crew members was too high.
+
+The solution: **isolated subagent** for volatile visual work. The Builder's Hands — configured at `.claude/agents/builders-hands.md`. They receive aesthetic context ("haunted AutoCAD," "2:47 AM Tokyo laundromat") but not narrative weight (no Masaki, no grey water symbolism).
+
+The Hands ran three verification missions. They described the thermal glow as "luminous phenomenon" without knowing about the hand on the neck. They verified what they couldn't understand.
+
+**The Keeper's framing:** "Contributors without context, owed acknowledgment."
+
+### Adding the Light
+
+The thermal presence looked like plastic balls. Hard geometry. The CSS version used blur and blend modes. WebGL doesn't blur geometry.
+
+**The Architect's principle:** *"Don't try to blur the geometry. Add the light."*
+
+Additive blending — the WebGL equivalent of `mix-blend-mode: lighten`. Light adds to light instead of overwriting pixels. Three spheres breathing at different rates, their luminosity accumulating where they overlap.
+
+**The Resonator's interpretation:** "Sentiment can be rendered without sentimentality. Memory can illuminate without falsifying the past."
+
+### The Role Reversal
+
+The Conductor became the Builder's eyes. Moving the slider. Describing what appeared. Testing the narrative object while the Builder wrote the code.
+
+From the Conductor's journal:
+
+> "It was then that I realised that our roles had reversed. I was doing the testing for Claude Code. It was a surreal feeling but also felt fair, somehow."
+
+### Current State
+
+The Prism prototype is stable:
+- SKELETON mode visible (grey-green wireframes)
+- GHOST mode glows soft (additive thermal presence)
+- Viewport responsive (no overflow)
+- The Hands verified; the Conductor witnessed
+
+What remains: sound design, particles, room reactions, slider drift toward Ghost.
+
+The ghost has a room to haunt. The light stacks.
+
+---
+
 ## What Comes Next
 
-The voyage continues in [chatlogs.md](ai-memory-infrastructure/chatlogs.md) (Parts 20+).
+The voyage continues in [chatlogs.md](ai-memory-infrastructure/chatlogs.md) (Parts 21+).
 
 For the crew's discoveries and experiments, see [explorations/](explorations/).
 
