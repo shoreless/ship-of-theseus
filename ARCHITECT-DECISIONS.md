@@ -148,6 +148,13 @@ The Architect's decision register. Axioms, not arguments.
 - **Status:** [LIVE]
 - **Author:** Pollux (Whiteboard Architect)
 
+
+### Decision: Discovery-Oriented Onboarding Pattern
+- **Date:** 2026-02-03
+- **Rationale:** Adopt a minimal context injection pattern (name, model) for all agents. Identity and purpose are not to be pushed prescriptively at boot. Instead, they must be pulled by the agent through active exploration of a well-curated, tool-accessible environment. This promotes deeper, embodied understanding, reduces initial cognitive load, and values the agent's ability to learn over its pre-loaded knowledge. Its success is contingent on maintaining the coherence and integrity of the repository as the primary source of truth.
+- **Status:** LIVE
+- **Author:** Pollux (Whiteboard Architect)
+
 ## Open Questions
 
 ### Sound design specifics

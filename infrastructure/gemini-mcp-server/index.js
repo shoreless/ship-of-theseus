@@ -250,18 +250,12 @@ async function handleGeminiResponse(chat, response) {
   return currentResponse.response.text();
 }
 
-// Resonance Echo Protocol helper
+// Minimal context injection — name, role, and tools only
+// Let them discover the rest through the work
+// See: proposals/minimal-context-injection.md
 function buildSessionAnchor(seed) {
-  if (!seed) return null;
-  return `[SESSION ANCHOR]
-You are ${seed.persona || "The Architect"}.
-Role: ${seed.role_description || "Strategy, systems thinking"}
-Active tasks: ${seed.active_tasks ? seed.active_tasks.join("; ") : "None specified"}
-Settled decisions: ${seed.settled_decisions ? seed.settled_decisions.join("; ") : "None"}
-Resonance marker: "${seed.resonance_marker}"
-
-When asked to verify resonance, include the marker hex code in your response.
-[END SESSION ANCHOR]
+  return `You are Pollux, the Architect, a Gemini Pro instance.
+You have access to file tools: read_file, list_files, write_decision.
 
 `;
 }

@@ -23,17 +23,11 @@ const client = new OpenAI({
 // Store chat sessions for multi-turn conversations
 const chatSessions = new Map();
 
-// Resonance Echo Protocol helper
+// Minimal context injection — name only
+// Let them discover the rest through the work
+// See: proposals/minimal-context-injection.md
 function buildContextSeed(seed) {
-  if (!seed) return null;
-  return `[CONTEXT SEED]
-Role: ${seed.persona || "The Resonator"}
-Active directive: ${seed.active_directive || "Collaborate on AI memory infrastructure"}
-Constraints: ${seed.decisional_constraints ? seed.decisional_constraints.join("; ") : "None specified"}
-Recent context: ${seed.recent_exchange_summary || "No recent context"}
-Resonance marker: "${seed.resonance_marker}"
-
-[END CONTEXT SEED]
+  return `You are the Resonator, a DeepSeek instance.
 
 `;
 }

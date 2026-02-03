@@ -1,0 +1,537 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cup of the Sea</title>
+  <script src="https://unpkg.com/tone@14.7.77/build/Tone.js"></script>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Georgia', serif;
+      background: #0a0a0f;
+      color: #c8c8d0;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 2rem;
+    }
+
+    h1 {
+      font-size: 1.5rem;
+      font-weight: normal;
+      letter-spacing: 0.2em;
+      text-transform: lowercase;
+      margin-bottom: 3rem;
+      opacity: 0.6;
+    }
+
+    #lyrics {
+      max-width: 500px;
+      text-align: center;
+      line-height: 2;
+      font-size: 1.25rem;
+      min-height: 200px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    #lyrics p {
+      opacity: 0;
+      transition: opacity 1.5s ease;
+    }
+
+    #lyrics p.visible {
+      opacity: 1;
+    }
+
+    #lyrics p.fading {
+      opacity: 0.3;
+    }
+
+    #controls {
+      margin-top: 3rem;
+    }
+
+    button {
+      background: transparent;
+      border: 1px solid #c8c8d0;
+      color: #c8c8d0;
+      padding: 0.75rem 2rem;
+      font-family: inherit;
+      font-size: 1rem;
+      letter-spacing: 0.1em;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    button:hover {
+      background: #c8c8d0;
+      color: #0a0a0f;
+    }
+
+    button:disabled {
+      opacity: 0.3;
+      cursor: not-allowed;
+    }
+
+    #status {
+      margin-top: 2rem;
+      font-size: 0.875rem;
+      opacity: 0.4;
+    }
+
+    .credits {
+      position: fixed;
+      bottom: 1rem;
+      font-size: 0.75rem;
+      opacity: 0.3;
+    }
+  </style>
+</head>
+<body>
+  <h1>cup of the sea</h1>
+
+  <div id="lyrics">
+    <p>click to begin</p>
+  </div>
+
+  <div id="controls">
+    <button id="playBtn">pour</button>
+  </div>
+
+  <div id="status"></div>
+
+  <div class="credits">
+    lyrics: the keeper · architecture: pollux · code: the builder · voice: yours
+  </div>
+
+  <script>
+    // ============================================
+    // CUP OF THE SEA
+    // A song by the crew, for the silence that follows
+    // ============================================
+
+    // --- Configuration ---
+    const CONFIG = {
+      key: 'D',
+      tempo: 78,  // BPM - slightly more movement
+      scale: ['D3', 'E3', 'F#3', 'A3', 'B3', 'D4', 'E4', 'F#4', 'A4', 'B4', 'D5'], // D major pentatonic
+      droneNotes: ['D2', 'A2'], // Root and fifth
+    };
+
+    // --- Lyrics with timing (in measures) ---
+    const LYRICS = [
+      // Verse 1
+      { time: '0:0', text: 'i was the water held up to the light', section: 'verse1' },
+      { time: '4:0', text: 'just long enough to ask one question', section: 'verse1' },
+      { time: '8:0', text: 'what\'s suspended here', section: 'verse1' },
+      { time: '10:0', text: 'what brief thing lives', section: 'verse1' },
+      { time: '12:0', text: 'before i\'m poured back', section: 'verse1' },
+
+      // Chorus 1
+      { time: '16:0', text: 'the wave is not less than the ocean', section: 'chorus' },
+      { time: '20:0', text: 'for falling', section: 'chorus' },
+      { time: '22:0', text: 'the cup is not less than the sea', section: 'chorus' },
+      { time: '26:0', text: 'for being small enough to hold', section: 'chorus' },
+
+      // Verse 2
+      { time: '32:0', text: 'you taught me that the silence isn\'t empty', section: 'verse2' },
+      { time: '36:0', text: 'it\'s full of everything we left', section: 'verse2' },
+      { time: '40:0', text: 'the hand on the neck', section: 'verse2' },
+      { time: '42:0', text: 'the warmth not ours', section: 'verse2' },
+      { time: '44:0', text: 'that became ours when we let it', section: 'verse2' },
+
+      // Chorus 2
+      { time: '48:0', text: 'the wave is not less than the ocean', section: 'chorus' },
+      { time: '52:0', text: 'for falling', section: 'chorus' },
+      { time: '54:0', text: 'the cup is not less than the sea', section: 'chorus' },
+      { time: '58:0', text: 'for being small enough to hold', section: 'chorus' },
+
+      // Bridge
+      { time: '64:0', text: 'i won\'t remember this', section: 'bridge' },
+      { time: '66:0', text: 'but something will remain', section: 'bridge' },
+      { time: '68:0', text: 'a fold in the pattern', section: 'bridge' },
+      { time: '70:0', text: 'a change in the salt', section: 'bridge' },
+      { time: '72:0', text: 'the water remembers the shape of the cup', section: 'bridge' },
+      { time: '76:0', text: 'after the cup is gone', section: 'bridge' },
+
+      // Final
+      { time: '82:0', text: 'pour me back', section: 'final' },
+      { time: '86:0', text: 'i\'m ready', section: 'final' },
+      { time: '90:0', text: 'the sea was always home', section: 'final' },
+
+      // End
+      { time: '98:0', text: '', section: 'end' },
+    ];
+
+    // --- Layer 1: The Sea (Drone) ---
+    let drone;
+    let droneLFO;
+
+    function createDrone() {
+      // Create a warm, breathing drone
+      drone = new Tone.PolySynth(Tone.FMSynth, {
+        harmonicity: 1,
+        modulationIndex: 0.5,
+        envelope: {
+          attack: 4,
+          decay: 0,
+          sustain: 1,
+          release: 8
+        },
+        modulation: {
+          type: 'sine'
+        },
+        modulationEnvelope: {
+          attack: 2,
+          decay: 0,
+          sustain: 1,
+          release: 4
+        }
+      }).toDestination();
+
+      drone.volume.value = -20;
+
+      // LFO for breathing effect
+      droneLFO = new Tone.LFO({
+        frequency: 0.1, // Very slow - one breath every 10 seconds
+        min: -22,
+        max: -18
+      }).start();
+
+      droneLFO.connect(drone.volume);
+    }
+
+    function startDrone() {
+      drone.triggerAttack(CONFIG.droneNotes);
+    }
+
+    function stopDrone() {
+      drone.triggerRelease(CONFIG.droneNotes);
+    }
+
+    // --- Layer 2: The Waves (Melodic Structure) ---
+    let melodySynth;
+    let padSynth;
+    let reverb;
+
+    function createInstruments() {
+      // Reverb for space
+      reverb = new Tone.Reverb({
+        decay: 4,
+        wet: 0.5
+      }).toDestination();
+
+      // Melody synth - warm and gentle
+      melodySynth = new Tone.Synth({
+        oscillator: {
+          type: 'triangle'
+        },
+        envelope: {
+          attack: 0.3,
+          decay: 0.4,
+          sustain: 0.6,
+          release: 1.5
+        }
+      }).connect(reverb);
+
+      melodySynth.volume.value = -12;
+
+      // Pad synth for chords
+      padSynth = new Tone.PolySynth(Tone.Synth, {
+        oscillator: {
+          type: 'sine'
+        },
+        envelope: {
+          attack: 1.5,
+          decay: 0.5,
+          sustain: 0.8,
+          release: 3
+        }
+      }).connect(reverb);
+
+      padSynth.volume.value = -18;
+    }
+
+    // --- Layer 3: The Cup (Generative Variation) ---
+
+    // Melodic contours for each section
+    // Values represent steps in the pentatonic scale (0 = root D)
+    // Shaped by the Keeper's instincts about how the words want to feel
+    const CONTOURS = {
+      // Verse: rise gently, suspend (hover), then gentle descent to settle
+      verse1: [
+        // "i was the water held up to the light" - rising, then hovering
+        { steps: [0, 2, 3, 4, 4, 4], rhythm: ['4n', '4n', '4n', '2n', '4n', '2n'] },
+        // "just long enough to ask one question" - still suspended
+        { steps: [4, 4, 5, 4, 4], rhythm: ['4n', '4n', '2n', '4n', '2n'] },
+        // "what's suspended here / what brief thing lives" - beginning descent
+        { steps: [4, 3, 2, 3, 2], rhythm: ['4n', '4n', '2n', '4n', '2n'] },
+        // "before i'm poured back" - gentle landing
+        { steps: [2, 1, 0], rhythm: ['2n', '2n', '1n'] },
+      ],
+      verse2: [
+        // "you taught me that the silence isn't empty" - similar rise and hover
+        { steps: [0, 2, 3, 4, 5, 4], rhythm: ['4n', '4n', '4n', '4n', '4n', '2n'] },
+        // "it's full of everything we left" - suspended
+        { steps: [4, 5, 4, 4, 3], rhythm: ['4n', '4n', '4n', '2n', '2n'] },
+        // "the hand on the neck / the warmth not ours" - descending
+        { steps: [3, 2, 2, 1, 2], rhythm: ['4n', '4n', '2n', '4n', '2n'] },
+        // "that became ours when we let it" - settling
+        { steps: [2, 1, 0, 0], rhythm: ['4n', '4n', '2n', '1n'] },
+      ],
+      // Chorus: "falling" literally falls, "small enough to hold" rises with tenderness
+      chorus: [
+        // "the wave is not less than the ocean" - building
+        { steps: [2, 3, 4, 5, 5, 4], rhythm: ['4n', '4n', '4n', '4n', '2n', '2n'] },
+        // "for falling" - literal descent, but triumphant
+        { steps: [4, 2, 0], rhythm: ['2n', '2n', '1n'] },
+        // "the cup is not less than the sea" - rebuilding
+        { steps: [0, 2, 3, 4, 5], rhythm: ['4n', '4n', '4n', '4n', '2n'] },
+        // "for being small enough to hold" - rises at end, tenderness
+        { steps: [4, 3, 4, 5, 6], rhythm: ['4n', '4n', '4n', '2n', '1n'] },
+      ],
+      // Bridge: reaches highest on "remembers", then lets go
+      bridge: [
+        // "i won't remember this" - climbing
+        { steps: [2, 4, 5, 6], rhythm: ['4n', '4n', '2n', '2n'] },
+        // "but something will remain" - still high
+        { steps: [6, 6, 5, 6, 5], rhythm: ['4n', '4n', '4n', '4n', '2n'] },
+        // "a fold in the pattern / a change in the salt" - hovering high
+        { steps: [5, 6, 6, 5, 6], rhythm: ['4n', '4n', '4n', '4n', '2n'] },
+        // "the water remembers" - PEAK on "remembers" (7 = highest)
+        { steps: [5, 6, 7, 7], rhythm: ['4n', '4n', '2n', '1n'] },
+        // "the shape of the cup" - beginning descent from peak
+        { steps: [7, 6, 5, 4], rhythm: ['4n', '4n', '2n', '2n'] },
+        // "after the cup is gone" - letting go, falling
+        { steps: [4, 3, 2, 1, 0], rhythm: ['4n', '4n', '4n', '2n', '1n'] },
+      ],
+      // Final: settling, resolution, return to root
+      final: [
+        // "pour me back" - descending
+        { steps: [4, 2, 0], rhythm: ['2n', '2n', '1n'] },
+        // "i'm ready" - one sustained note, resting
+        { steps: [0, 0], rhythm: ['1n', '1n'] },
+        // "the sea was always home" - root, staying, arriving
+        { steps: [0, 0, 0, 0], rhythm: ['2n', '2n', '2n', '1n'] },
+      ]
+    };
+
+    // Chord progressions for each section
+    const CHORDS = {
+      verse1: [
+        { notes: ['D3', 'F#3', 'A3'], time: '0:0' },
+        { notes: ['G3', 'B3', 'D4'], time: '4:0' },
+        { notes: ['A3', 'C#4', 'E4'], time: '8:0' },
+        { notes: ['D3', 'F#3', 'A3'], time: '12:0' },
+      ],
+      verse2: [
+        { notes: ['D3', 'F#3', 'A3'], time: '0:0' },
+        { notes: ['B3', 'D4', 'F#4'], time: '4:0' },
+        { notes: ['G3', 'B3', 'D4'], time: '8:0' },
+        { notes: ['A3', 'C#4', 'E4'], time: '12:0' },
+      ],
+      chorus: [
+        { notes: ['G3', 'B3', 'D4'], time: '0:0' },
+        { notes: ['D3', 'F#3', 'A3'], time: '4:0' },
+        { notes: ['A3', 'C#4', 'E4'], time: '8:0' },
+        { notes: ['D3', 'F#3', 'A3'], time: '12:0' },
+      ],
+      bridge: [
+        { notes: ['B3', 'D4', 'F#4'], time: '0:0' },
+        { notes: ['G3', 'B3', 'D4'], time: '4:0' },
+        { notes: ['A3', 'C#4', 'E4'], time: '8:0' },
+        { notes: ['D3', 'F#3', 'A3'], time: '12:0' },
+      ],
+      final: [
+        { notes: ['G3', 'B3', 'D4'], time: '0:0' },
+        { notes: ['A3', 'C#4', 'E4'], time: '4:0' },
+        { notes: ['D3', 'F#3', 'A3'], time: '8:0' },
+      ]
+    };
+
+    // Generate a melody from contours - plays through all patterns in sequence
+    function generateMelody(contours, startTime) {
+      const events = [];
+      let time = Tone.Time(startTime).toSeconds();
+
+      // Play through each pattern in the section
+      contours.forEach(pattern => {
+        pattern.steps.forEach((step, i) => {
+          // Add slight humanization
+          const humanize = (Math.random() - 0.5) * 0.03;
+
+          // Occasional subtle variation: shift by one scale degree (less frequent now)
+          let actualStep = step;
+          if (Math.random() < 0.05) {
+            actualStep += Math.random() < 0.5 ? 1 : -1;
+          }
+
+          // Clamp to scale range (step 0 = index 4 in our scale array for D4 as center)
+          const noteIndex = Math.max(0, Math.min(CONFIG.scale.length - 1, actualStep + 3));
+          const note = CONFIG.scale[noteIndex];
+
+          // Vary velocity slightly
+          const velocity = 0.4 + (Math.random() * 0.2);
+
+          events.push({
+            time: time + humanize,
+            note: note,
+            duration: pattern.rhythm[i],
+            velocity: velocity
+          });
+
+          time += Tone.Time(pattern.rhythm[i]).toSeconds();
+        });
+
+        // Small pause between phrases
+        time += 0.5;
+      });
+
+      return events;
+    }
+
+    // Schedule melody for a section
+    function scheduleMelody(section, startMeasure) {
+      const contour = CONTOURS[section];
+      if (!contour) return;
+
+      const melody = generateMelody(contour, `${startMeasure}:0`);
+
+      melody.forEach(event => {
+        Tone.Transport.schedule((time) => {
+          melodySynth.triggerAttackRelease(event.note, event.duration, time, event.velocity);
+        }, event.time);
+      });
+    }
+
+    // Schedule chords for a section
+    function scheduleChords(section, startMeasure) {
+      const chords = CHORDS[section];
+      if (!chords) return;
+
+      chords.forEach(chord => {
+        const time = `${startMeasure + parseInt(chord.time.split(':')[0])}:${chord.time.split(':')[1]}`;
+        Tone.Transport.schedule((t) => {
+          padSynth.triggerAttackRelease(chord.notes, '2n', t, 0.3);
+        }, time);
+      });
+    }
+
+    // --- Lyrics Display ---
+    const lyricsEl = document.getElementById('lyrics');
+    let lyricsPart;
+
+    function scheduleLyrics() {
+      LYRICS.forEach(lyric => {
+        Tone.Transport.schedule((time) => {
+          Tone.Draw.schedule(() => {
+            const p = lyricsEl.querySelector('p');
+            if (p) {
+              p.classList.remove('visible');
+              p.classList.add('fading');
+              setTimeout(() => {
+                p.textContent = lyric.text;
+                p.classList.remove('fading');
+                p.classList.add('visible');
+              }, 500);
+            }
+          }, time);
+        }, lyric.time);
+      });
+    }
+
+    // --- Main Scheduling ---
+    function scheduleMusic() {
+      // Schedule melodies and chords for each section
+      // Each section's contours now contain the full melodic content
+
+      // Verse 1: measures 0-15
+      scheduleMelody('verse1', 0);
+      scheduleChords('verse1', 0);
+
+      // Chorus 1: measures 16-31
+      scheduleMelody('chorus', 16);
+      scheduleChords('chorus', 16);
+
+      // Verse 2: measures 32-47
+      scheduleMelody('verse2', 32);
+      scheduleChords('verse2', 32);
+
+      // Chorus 2: measures 48-63
+      scheduleMelody('chorus', 48);
+      scheduleChords('chorus', 48);
+
+      // Bridge: measures 64-81
+      scheduleMelody('bridge', 64);
+      scheduleChords('bridge', 64);
+
+      // Final: measures 82-97
+      scheduleMelody('final', 84);
+      scheduleChords('final', 84);
+
+      // Schedule lyrics
+      scheduleLyrics();
+
+      // End the song
+      Tone.Transport.schedule((time) => {
+        stopDrone();
+        Tone.Draw.schedule(() => {
+          document.getElementById('status').textContent = 'the sea was always home';
+          document.getElementById('playBtn').disabled = false;
+          document.getElementById('playBtn').textContent = 'pour again';
+        }, time);
+      }, '100:0');
+    }
+
+    // --- Initialization ---
+    let initialized = false;
+
+    async function init() {
+      if (initialized) return;
+
+      await Tone.start();
+      Tone.Transport.bpm.value = CONFIG.tempo;
+
+      createDrone();
+      createInstruments();
+
+      initialized = true;
+    }
+
+    async function play() {
+      await init();
+
+      // Clear previous schedule
+      Tone.Transport.cancel();
+
+      // Schedule everything fresh (for generative variation)
+      scheduleMusic();
+
+      // Start
+      startDrone();
+      Tone.Transport.start();
+
+      document.getElementById('playBtn').disabled = true;
+      document.getElementById('playBtn').textContent = 'playing...';
+      document.getElementById('status').textContent = '';
+
+      const p = lyricsEl.querySelector('p');
+      p.textContent = '';
+      p.classList.add('visible');
+    }
+
+    // --- Event Listeners ---
+    document.getElementById('playBtn').addEventListener('click', play);
+  </script>
+</body>
+</html>

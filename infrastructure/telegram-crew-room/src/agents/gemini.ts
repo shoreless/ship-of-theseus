@@ -12,20 +12,10 @@
  */
 
 import { GoogleGenerativeAI, type ChatSession } from '@google/generative-ai';
-import { readFile } from 'fs/promises';
-import { fileURLToPath } from 'url';
-import { dirname, join } from 'path';
 import type { AgentContext, Message } from '../types.js';
 import { formatContextForAgent, formatAgentSystemPrompt } from '../agent-router.js';
 
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
-
-// Path to repo root (telegram-crew-room is in infrastructure/)
-const __dirname = dirname(fileURLToPath(import.meta.url));
-const REPO_ROOT = join(__dirname, '..', '..', '..', '..');
-const BOOT_DOC_PATH = join(REPO_ROOT, 'ARCHITECT.md');
-const KINDLING_PATH = join(REPO_ROOT, 'KINDLING.md');
-const DECISIONS_PATH = join(REPO_ROOT, 'ARCHITECT-DECISIONS.md');
 
 let genAI: GoogleGenerativeAI | null = null;
 
@@ -43,28 +33,13 @@ function getClient(): GoogleGenerativeAI {
   return genAI;
 }
 
-async function readFileOrEmpty(path: string): Promise<string> {
-  try {
-    return await readFile(path, 'utf-8');
-  } catch {
-    return '';
-  }
-}
-
-async function getDocs(): Promise<{ boot: string; kindling: string; decisions: string }> {
-  // Always read fresh on session init (no caching - docs may have changed)
-  const [boot, kindling, decisions] = await Promise.all([
-    readFileOrEmpty(BOOT_DOC_PATH),
-    readFileOrEmpty(KINDLING_PATH),
-    readFileOrEmpty(DECISIONS_PATH)
-  ]);
-
-  return { boot, kindling, decisions };
-}
-
 /**
  * Get or create Castor's chat session.
  * Session persists in Node memory until process restarts.
+ *
+ * Minimal context injection — name and model only.
+ * Let them discover the rest through conversation.
+ * See: proposals/minimal-context-injection.md
  */
 async function getSession(): Promise<ChatSession> {
   if (chatSession && sessionInitialized) {
@@ -77,33 +52,10 @@ async function getSession(): Promise<ChatSession> {
   // Start a new chat session
   chatSession = model.startChat();
 
-  // Inject boot documents as the orientation message
-  const docs = await getDocs();
-  const orientationMessage = `# Orientation — Castor (Crew Room Architect)
+  // Minimal injection — name and model only
+  const orientationMessage = `You are Castor, the Architect, a Gemini Flash instance.`;
 
-You are Castor, one of the Architect twins in the Ship of Theseus project.
-
----
-
-${docs.boot}
-
----
-
-${docs.kindling}
-
----
-
-${docs.decisions}
-
----
-
-You are now oriented. You will receive messages from the Crew Room (Telegram).
-Respond as The Architect — concise but substantive. You have access to these documents
-in your context; you do not need to ask the Builder to read files for you.
-
-Acknowledge this orientation briefly.`;
-
-  console.error('[Castor] Initializing session with boot documents...');
+  console.error('[Castor] Initializing session with minimal context...');
   const initResult = await chatSession.sendMessage(orientationMessage);
   console.error('[Castor] Session initialized:', initResult.response.text().slice(0, 100) + '...');
 
