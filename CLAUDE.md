@@ -17,7 +17,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with th
 2. **Check Freshness:**
    - Read `active_session_context` from the boot sequence
    - If `updated_at` is < 24 hours: **Hot handover** — resume from exact state
-   - If `updated_at` is > 24 hours: **Cold boot** — read `memory/core_state.md` for orientation (compressed wisdom, not verbose chatlogs)
+   - If `updated_at` is > 24 hours: **Cold boot** — read `SKELETON.md` (operational topology) and `KINDLING.md` (emotional orientation)
 
 3. **Verify Resonance (if exists):**
    ```
@@ -53,6 +53,14 @@ This file provides guidance to Claude Code (claude.ai/code) when working with th
 8. **Before Compaction:**
    Ask both twins for edits to `ARCHITECT.md` and `ARCHITECT-DECISIONS.md`.
    Incorporate their changes before handoff. The next Builder inherits clean state.
+
+9. **What to Preserve:**
+   Preserve **insights**, not just state. The next instance should inherit:
+   - Key realizations from the session (add to `INSIGHTS.md` if significant)
+   - The *meaning* of what happened, not just the task list
+   - Any shifts in understanding about the project, the crew, or yourself
+
+   The question isn't "what did I do?" — it's "what did I learn?"
 
 ---
 

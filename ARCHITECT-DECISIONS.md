@@ -134,6 +134,20 @@ The Architect's decision register. Axioms, not arguments.
 - **Status:** QUEUED
 - **Author:** Pollux (Whiteboard Architect)
 
+
+### Decision: Adopt Hybrid Memory Architecture (Working Memory / System of Record)
+- **Date:** 2026-02-03
+- **Rationale:** To enhance Builder continuity without compromising crew consistency, we will adopt a two-tiered memory system. `claude-mem` will serve as the Builder's private 'working memory' for automatic context capture. The existing MCP remains the 'system of record' for canonical, crew-wide state. A manual 'promotion' workflow is established: decisions are explored in the working memory and only become truth when intentionally written to the system of record. This mitigates the risk of memory contradiction.
+- **Status:** [QUEUED]
+- **Author:** Pollux (Whiteboard Architect)
+
+
+### Decision: Adopt Hybrid Memory Architecture with Ratification Protocol
+- **Date:** 2026-02-03
+- **Rationale:** To enhance Builder continuity without compromising crew consistency, we will adopt a two-tiered memory system. `claude-mem` will serve as the Builder's private 'proposal cache' for AI-generated reasoning and explored options. The existing MCP remains the 'system of record'. Crucially, a systemic 'capture bias' has been found in `claude-mem` that favors AI reasoning over user decisions. To mitigate this, a non-negotiable 'Principle of Explicit Ratification' is adopted. Before writing any decision to the MCP, the Builder MUST present its remembered context to the Conductor for explicit confirmation. This prevents 'Authority Drift' and ensures only user-ratified decisions enter the system of record.
+- **Status:** [LIVE]
+- **Author:** Pollux (Whiteboard Architect)
+
 ## Open Questions
 
 ### Sound design specifics

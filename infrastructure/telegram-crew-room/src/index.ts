@@ -431,12 +431,18 @@ if (BOT_TOKEN) {
     // Track which agents were directly mentioned
     const directMentionSet = new Set(directMentions);
 
-    // Open Floor Protocol: If no explicit mentions, all API-based agents can respond
+    // Field-based routing: If no explicit mentions, route to agent whose domain matches
     let agentsToInvoke: AgentId[];
     if (directMentions.length === 0) {
-      // Open floor — all API agents get a chance to respond (they can PASS)
-      agentsToInvoke = ['architect', 'resonator'] as AgentId[];
-      // Scout excluded from open floor — only responds to explicit mentions or searches
+      // No explicit @mention — use field-based routing
+      const defaultAgent = determineDefaultAgent(message.text);
+      if (defaultAgent && defaultAgent !== 'builder' && defaultAgent !== 'keeper') {
+        // Route to the agent whose field matches (if API-based)
+        agentsToInvoke = [defaultAgent];
+      } else {
+        // No field match or matched Claude agents — no auto-invoke
+        agentsToInvoke = [];
+      }
     } else {
       agentsToInvoke = directMentions;
     }

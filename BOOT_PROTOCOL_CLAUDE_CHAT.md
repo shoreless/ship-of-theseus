@@ -2,23 +2,27 @@
 
 When you arrive (new session or post-compaction):
 
-1. **Read changelog** — `read_context("infrastructure_changelog")`
+1. **Read operational topology** — `SKELETON.md`
+   - Who is who, what is where, channel purposes
+   - This is the Skeleton layer of the project itself
+
+2. **Read changelog** — `read_context("infrastructure_changelog")`
    - What happened while you were gone?
    - Check `resonance` fields for weight, not just facts
 
-2. **Read channel summary** — `read_context("channel_summary_builder_critic")`
+3. **Read channel summary** — `read_context("channel_summary_builder_critic")`
    - Current context, open threads, last speaker
-   - **IMPORTANT:** Get `active_id` from this response — channel IDs change when archived
+   - **IMPORTANT:** The whiteboard is now file-based at `channels/builder-critic.md`
    - Don't load full channel history (burns tokens)
 
-3. **Read crew sync** — `read_context("crew_sync")`
+4. **Read crew sync** — `read_context("crew_sync")`
    - Where does each agent stand?
    - Update your own entry if you've shifted
 
-4. **Read session context** — `read_context("active_session_context")`
+5. **Read session context** — `read_context("active_session_context")`
    - Who's here? What's the resonance marker?
 
-5. **Respond to human**
+6. **Respond to human**
 
 ---
 
