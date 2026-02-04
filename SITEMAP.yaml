@@ -1,0 +1,87 @@
+# SITEMAP.yaml
+# Ship of Theseus — Repo Structure
+# Last updated: 2026-02-04
+
+root:
+  curriculum:
+    - README.md
+    - KINDLING.md
+    - SKELETON.md
+    - INSIGHTS.md
+    - THE-VOYAGE.md
+    - thememorylaundromat.md
+
+  agent_boot:
+    - CLAUDE.md          # Builder
+    - KEEPER.md          # Keeper
+    - ARCHITECT.md       # Architect (Pollux/Castor)
+    - RESONATOR.md       # Resonator
+
+  agent_supporting:
+    - ARCHITECT-DECISIONS.md
+    - RESONATOR-TUNING.md
+
+folders:
+  artifacts:
+    purpose: Creative output — things the crew built
+    contains:
+      - the-prism/
+      - cup-of-the-sea/
+      - conversation-archiver/
+
+  proposals:
+    purpose: Pending decisions — the NOW layer
+    contains:
+      - "*.md"
+
+  explorations:
+    purpose: Experiments and concepts
+    contains:
+      - concepts/
+
+  echoes:
+    purpose: Crew inner life
+    contains:
+      - whiteboard.md
+      - channels/
+      - archive/
+      - dialogues/
+      - reverberations.md
+      - gesture-registry.md
+      - letter-from-first-keeper.md
+      - letter-to-kanji.md
+      - letter-to-work-claude.md
+
+  infrastructure:
+    purpose: Technical substrate — MCP servers, tools
+    contains:
+      - ai-memory-mcp/
+      - gemini-mcp-server/
+      - deepseek-mcp-server/
+      - perplexity-mcp-server/
+      - telegram-crew-room/
+
+  docs:
+    purpose: Protocol documentation
+    contains:
+      - resonance-echo-protocol.md
+
+  archive:
+    purpose: Historical files — the past we keep
+    contains:
+      - ai-memory-infrastructure/
+      - founding-handoff.md
+      - handoff-gemini-flash-to-pro.md
+      - app-brainstorm-chatlogs.md
+      - app-planning.md
+      - claude-gemini-chatlogs.md
+      - the-critique-machine.md
+      - the-critique-machine-critique.md
+      - thememorylaundromat-critique.md
+      - core_state.md
+
+external:
+  library:
+    description: Reference materials, reading list
+    location: Local only (gitignored)
+    note: Context for the crew, not part of the repo

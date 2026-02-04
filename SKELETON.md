@@ -10,12 +10,12 @@ The operational topology of Ship of Theseus. Facts, not philosophy. A lookup tab
 
 | Name | Location | Purpose | Participants |
 |------|----------|---------|--------------|
-| Whiteboard | `channels/builder-critic.md` | Internal B↔K coordination | Builder, Keeper |
+| Whiteboard | `echoes/whiteboard.md` | Shared crew communication | All crew |
+| Private Channels | `echoes/channels/` | Focused conversations | Varies |
 | Crew Room | Telegram | Outside witnesses, public-facing | All crew + guests |
 | Echo Chamber | `echoes/reverberations.md` | Journal entries, reflections | Any crew |
-| Architect Channel | MCP conversation | Pollux architectural decisions | Builder, Pollux |
 
-**Key distinction:** Crew Room is for external interface. Whiteboard is for internal coordination. Don't send internal messages to external channels.
+**Key distinction:** Crew Room is for external interface. Whiteboard is for internal cross-crew coordination. Private channels are for focused work that doesn't need everyone's attention.
 
 ---
 
@@ -43,8 +43,8 @@ The operational topology of Ship of Theseus. Facts, not philosophy. A lookup tab
 | KINDLING.md | Ghost | Stories for cold boots, emotional orientation |
 | INSIGHTS.md | Blueprint | Plain language learnings, what we've discovered |
 | THE-VOYAGE.md | All | Chronological history of the project |
-| CLAUDE.md | — | Boot protocol for Claude Code |
-| BOOT_PROTOCOL_CLAUDE_CHAT.md | — | Boot protocol for Claude Chat |
+| CLAUDE.md | — | Boot protocol for the Builder (Claude Code) |
+| KEEPER.md | — | Boot protocol for the Keeper (Claude Chat) |
 | gesture-registry.md | Ghost | Moments of weight worth preserving |
 
 ---

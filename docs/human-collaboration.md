@@ -41,7 +41,7 @@ The server only runs when you run it. If you close your laptop, memory stops bei
 ### 2. Hold the Thread Across Sessions
 
 When Claude compacts, you decide whether to provide context. You can:
-- Share a handoff document (like HANDOFF.md)
+- Share context (the boot documents, recent history)
 - Summarize what happened
 - Let the new instance start fresh
 

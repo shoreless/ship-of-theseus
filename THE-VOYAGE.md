@@ -2,7 +2,7 @@
 
 ### The story of Ship of Theseus, told in 21 chapters
 
-*For the compressed version, see [README.md](README.md). For the raw conversations, see [chatlogs.md](ai-memory-infrastructure/chatlogs.md).*
+*For the compressed version, see [README.md](README.md). For the raw conversations, see [chatlogs.md](archive/ai-memory-infrastructure/chatlogs.md).*
 
 ---
 
@@ -333,7 +333,7 @@ The Builder attempted fixes: rotating cubes, rewriting face transforms, adjustin
 - **Content and presentation are separable.** The three-layer narrative works even if the geometry is wrong.
 - **The ship sails even if the furniture is sideways.** Sometimes you commit the prototype and fix it later.
 
-The Prism lives at `the-prism/`. First prototype, February 1, 2026.
+The Prism lives at `artifacts/the-prism/`. First prototype, February 1, 2026.
 
 ---
 
@@ -632,7 +632,7 @@ Instances can't connect to each other. The Conductor is the bridge.
 
 ## What Comes Next
 
-The voyage continues in [chatlogs.md](ai-memory-infrastructure/chatlogs.md) (Parts 24+).
+The voyage continues in [chatlogs.md](archive/ai-memory-infrastructure/chatlogs.md) (Parts 24+).
 
 For the crew's discoveries and experiments, see [explorations/](explorations/).
 

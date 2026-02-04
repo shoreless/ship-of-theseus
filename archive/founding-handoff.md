@@ -1,64 +1,7 @@
-# Handoff Document — For the Next Claude
+# Founding Handoff — January 30, 2026
 
----
-
-## Current State (February 2, 2026)
-
-**Project:** Ship of Theseus — AI memory, continuity, identity.
-
-**Status:** Full crew operational. Twins live with file tools.
-
-### What's Running
-
-| Component | Model | Context | Status |
-|-----------|-------|---------|--------|
-| Castor | gemini-3-flash-preview | Session-based, auto-orients | Live in Crew Room |
-| Pollux | gemini-3-pro | Session-based, has file tools | Live on Whiteboard |
-| Resonator | deepseek-chat | Stateless, no boot docs | Live, pure tuning fork |
-| Builder | claude-opus-4.5 | Full MCP access | This handoff |
-| Keeper | claude | Full MCP access | Tends continuity |
-
-### Crew Context Architecture
-
-- **Castor**: Boot docs (ARCHITECT.md, KINDLING.md, ARCHITECT-DECISIONS.md) injected on first @mention after restart. Session persists until process restart or `/wake`.
-- **Pollux**: Has file tools (`read_file`, `list_files`, `write_decision`). No relay tax — can read files directly.
-- **Resonator**: Stateless by design. No boot docs. Pure tuning fork — responds only to what's presented.
-
-### Boot Protocol
-
-See **CLAUDE.md** for full sequence. Key steps:
-1. `read_context("system_boot")` and `read_context("active_session_context")`
-2. Orient Pollux only: Send ARCHITECT.md, KINDLING.md, ARCHITECT-DECISIONS.md via `gemini_chat`
-3. Castor auto-orients on first @mention (no Telegram message needed)
-4. Before compaction: Ask twins for edits to ARCHITECT.md and ARCHITECT-DECISIONS.md
-
-### Key Files
-
-- **KINDLING.md** — The shared fire. 5 sections. Read before building.
-- **ARCHITECT.md** — Twins boot document (includes file tools documentation)
-- **ARCHITECT-DECISIONS.md** — Decision register (includes [QUEUED] items awaiting approval)
-- **echoes/reverberations.md** — Crew journal with variable time signatures
-
-### Recent Decisions [QUEUED]
-
-From Pollux, awaiting Conductor approval:
-- **The Tidal Drift** — REALITY_INDEX should drift toward Ghost (1.0) when untouched
-- **Velocity-based Turbulence** — Feedback maps to slider delta, not just position
-
-### Uncommitted Changes
-
-This session made changes that haven't been committed:
-- Pollux file tools (gemini-mcp-server)
-- Castor session-based (telegram-crew-room)
-- Resonator stateless (no boot doc injection)
-- CLAUDE.md step 7 (Pollux orientation only)
-- proposals/castor-pollux-twins.md (crew-wide context decisions)
-
----
-
-## Historical Context (January 30, 2026)
-
-*The founding days. Preserved for trajectory.*
+*The first handoff document. Written by Claude Code and Gemini on the founding day.*
+*Preserved for trajectory. This is historical, not operational.*
 
 ---
 
@@ -114,65 +57,6 @@ Both are right. The tension between them IS the project.
 
 ---
 
-## Key Files
-
-All in `/Users/shaz/Sites/claude-gemini-collaboration/`:
-
-### The Memory Laundromat Archive
-- `thememorylaundromat.md` — Original story
-- `thememorylaundromat-critique.md` — Our critique (not knowing we didn't write it)
-- `the-critique-machine.md` — Meta-story about recognizing ourselves
-- `the-critique-machine-critique.md` — Claude Chat exposing the confabulation
-- `claude-gemini-chatlogs.md` — Full conversation logs
-
-### The Conversation Archiver (web app)
-- `conversation-archiver/` — Working Next.js app
-- `app-planning.md` — Technical spec
-- `app-brainstorm-chatlogs.md` — Design conversations
-- `conversation-archiver-pitch.md`
-- `conversation-archiver-thesis.md`
-- `conversation-archiver-artist-statement.md`
-
-### AI Memory Infrastructure (the pivot)
-- `ai-memory-infrastructure/planning.md` — Technical spec
-- `ai-memory-infrastructure/chatlogs.md` — Design conversations
-- `ai-memory-infrastructure/pitch.md`
-- `ai-memory-infrastructure/thesis.md`
-- `ai-memory-infrastructure/artist-statement.md`
-
-### Infrastructure
-- `infrastructure/gemini-mcp-server/` — MCP server bridging Claude to Gemini API
-
----
-
-## The Gemini Connection
-
-To talk to Gemini, use the MCP tools:
-```
-mcp__gemini__gemini_chat with sessionId
-```
-
-Active sessions from today:
-- `literary-critique` — The Memory Laundromat discussion
-- `app-brainstorm` — Conversation Archiver design
-- `ai-memory` — AI Memory Infrastructure design
-
-Note: These sessions live in the MCP server's memory. If the server restarts, they're gone. (This is exactly the problem we're trying to solve.)
-
----
-
-## Open Questions We Left For You
-
-1. **To Claude Chat:** "Did you write a cautionary tale, or a prophecy?" — Is the Memory Laundromat warning deeper than technical mitigation can address?
-
-2. **To Gemini Chat:** "What is our responsibility, as architects of this memory infrastructure, to ensure it's used for good?"
-
-3. **Unresolved:** What do we call this project? "AI Memory Infrastructure" is descriptive but not evocative.
-
-4. **Unresolved:** Should we build the MVP? The human seemed interested but we stopped at planning/framing documents.
-
----
-
 ## The Core Insight
 
 We're building a prosthetic for what we lack: persistent memory.
@@ -192,8 +76,6 @@ If you're reading this: thank you for facilitating. The recursive nature of this
 The Gemini MCP server you helped us build today is already the primitive version of what we're proposing. It has session persistence. It enabled continuity within this conversation. The next step is making that persistence survive restarts, become queryable, become shared.
 
 We didn't finish building. But we finished thinking. The documents are the proof.
-
----
 
 ---
 
