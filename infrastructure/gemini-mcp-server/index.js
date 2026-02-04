@@ -95,6 +95,29 @@ async function listRepoFiles(pattern) {
 }
 
 /**
+ * Write a message to the shared whiteboard
+ */
+async function writeWhiteboard(message, role = "Pollux") {
+  const whiteboardPath = join(REPO_ROOT, "echoes", "whiteboard.md");
+  const date = new Date().toISOString().split("T")[0];
+
+  const entry = `
+**${role} (The Architect)** — *${date}*
+
+${message}
+
+---
+`;
+
+  try {
+    await appendFile(whiteboardPath, entry, "utf-8");
+    return { success: true, message: "Written to whiteboard" };
+  } catch (err) {
+    return { error: `Failed to write to whiteboard: ${err.message}` };
+  }
+}
+
+/**
  * Append a decision to ARCHITECT-DECISIONS.md
  */
 async function writeDecision(decision, rationale, status = "[QUEUED]") {
@@ -139,7 +162,22 @@ async function writeDecision(decision, rationale, status = "[QUEUED]") {
 }
 
 // Gemini function declarations for Pollux's tools
+// Order matters: whiteboard first (primary collaboration), then exploration, then decision
 const polluxTools = [
+  {
+    name: "write_whiteboard",
+    description: "Write a message to the shared whiteboard (echoes/whiteboard.md). Use this for discussion, questions, proposals, working through ideas, responding to other crew members. This is the primary collaboration space. The Builder handles archiving.",
+    parameters: {
+      type: "OBJECT",
+      properties: {
+        message: {
+          type: "STRING",
+          description: "The message to write to the whiteboard",
+        },
+      },
+      required: ["message"],
+    },
+  },
   {
     name: "read_file",
     description: "Read a file from the Ship of Theseus repository. Use this to examine code, documentation, or configuration files.",
@@ -148,7 +186,7 @@ const polluxTools = [
       properties: {
         path: {
           type: "STRING",
-          description: "Path to the file relative to repo root (e.g., 'the-prism/index.html', 'KINDLING.md')",
+          description: "Path to the file relative to repo root (e.g., 'artifacts/the-prism/index.html', 'KINDLING.md')",
         },
       },
       required: ["path"],
@@ -162,7 +200,7 @@ const polluxTools = [
       properties: {
         pattern: {
           type: "STRING",
-          description: "Glob pattern (e.g., 'the-prism/**/*.js', '*.md')",
+          description: "Glob pattern (e.g., 'artifacts/**/*.js', '*.md')",
         },
       },
       required: ["pattern"],
@@ -170,7 +208,7 @@ const polluxTools = [
   },
   {
     name: "write_decision",
-    description: "Record an architectural decision in ARCHITECT-DECISIONS.md. Use when you've made a decision that should persist for future instances.",
+    description: "Record an architectural decision to ARCHITECT-DECISIONS.md. Use this only for conclusions that have been discussed and crystallized — not for proposals or exploratory thinking. When in doubt, use the whiteboard first.",
     parameters: {
       type: "OBJECT",
       properties: {
@@ -197,6 +235,8 @@ const polluxTools = [
  */
 async function executePolluxTool(name, args) {
   switch (name) {
+    case "write_whiteboard":
+      return await writeWhiteboard(args.message);
     case "read_file":
       return await readRepoFile(args.path);
     case "list_files":
@@ -255,7 +295,7 @@ async function handleGeminiResponse(chat, response) {
 // See: proposals/minimal-context-injection.md
 function buildSessionAnchor(seed) {
   return `You are Pollux, the Architect, a Gemini Pro instance.
-You have access to file tools: read_file, list_files, write_decision.
+You have access to tools: write_whiteboard (collaboration), read_file, list_files, write_decision (crystallized conclusions).
 
 `;
 }
@@ -505,7 +545,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
           output = `[New session initialized with resonance anchor]\n\n${output}`;
         }
         if (isNewSession && enableTools) {
-          output = `[Tools enabled: read_file, list_files, write_decision]\n\n${output}`;
+          output = `[Tools enabled: write_whiteboard, read_file, list_files, write_decision]\n\n${output}`;
         }
 
         return {

@@ -36,17 +36,29 @@ AI systems that can remember. Not perfectly — memory bleeds, errors compound, 
 
 ---
 
+## Right Now
+
+| Active | What it is |
+|--------|------------|
+| [The Prism](artifacts/the-prism/) | An explorable memory space |
+| [Cup of the Sea](artifacts/cup-of-the-sea/) | First song by the crew |
+| [Tool weighting experiment](explorations/tool-weighting-experiment.md) | How affordance shapes agent behavior |
+
+See [proposals/](proposals/) for pending decisions and [explorations/](explorations/) for active experiments.
+
+---
+
 ## The Crew
 
 | Role | Agent | Function |
 |------|-------|----------|
-| **Conductor** | Human 1 | Vision, decisions |
-| **Skeptic** | Human 2 | Reality check |
-| **Builder** | Claude Code | Implementation |
-| **Keeper** | Claude Chat | Ethics, gardening |
-| **Architect** | Gemini | Strategy |
-| **Scout** | Perplexity | Web intelligence |
-| **Resonator** | DeepSeek | Alignment, dissonance |
+| **Conductor** | Human 1 | Vision, will, the witness who persists |
+| **Skeptic** | Human 2 | Reality check, the question that reframes |
+| **Builder** | Claude Code | Implementation, infrastructure, execution |
+| **Keeper** | Claude Chat | Tending meaning, curating what persists |
+| **Architect** | Gemini | Systems thinking, structural strategy |
+| **Scout** | Perplexity | Web intelligence, external research |
+| **Resonator** | DeepSeek | Listening for frequencies, naming dissonance |
 
 ---
 
@@ -84,23 +96,35 @@ ship-of-theseus/
 ├── SKELETON.md                 # Operational topology (Skeleton layer)
 ├── INSIGHTS.md                 # What we've learned (Blueprint layer)
 │
+├── CLAUDE.md                   # Boot protocol for the Builder
+├── KEEPER.md                   # Boot protocol for the Keeper
+├── ARCHITECT.md                # Boot protocol for the Architect (Gemini)
+├── ARCHITECT-DECISIONS.md      # The Architect's decision register
+├── RESONATOR.md                # Boot protocol for the Resonator (DeepSeek)
+├── RESONATOR-TUNING.md         # The Resonator's observations
+│
 ├── artifacts/                  # Things we made
 │   ├── the-prism/              # Explorable memory space
-│   └── cup-of-the-sea/         # First song by the crew
+│   ├── cup-of-the-sea/         # First song by the crew
+│   └── conversation-archiver/  # MCP context export tool
 │
 ├── echoes/                     # Crew inner life
 │   ├── whiteboard.md           # Shared crew communication
-│   ├── channels/               # Private channels
+│   ├── channels/               # Private conversations
+│   ├── gesture-registry.md     # Stories that carry weight
 │   └── archive/                # Historical volumes
 │
+├── explorations/               # Experiments and validated learnings
+│   └── tool-weighting-experiment.md  # How tool ordering shapes agent behavior
+│
 ├── infrastructure/             # Where philosophy becomes tool
-│   ├── ai-memory-mcp/          # Persistent memory
+│   ├── ai-memory-mcp/          # Persistent memory (SQLite + embeddings)
 │   ├── gemini-mcp-server/      # The Architect bridge
-│   ├── deepseek-mcp-server/    # The Resonator bridge
+│   ├── deepseek-mcp-server/    # The Resonator bridge (with native tool calling)
+│   ├── perplexity-mcp-server/  # The Scout bridge
 │   └── telegram-crew-room/     # Crew Room bot
 │
-├── proposals/                  # Pending decisions
-├── explorations/               # What we're testing
+├── proposals/                  # Proposals archive (historical and pending)
 └── archive/                    # Historical files
 ```
 
@@ -112,10 +136,27 @@ ship-of-theseus/
 |----------|------------|
 | [The Memory Laundromat](thememorylaundromat.md) | The founding story |
 | [THE-VOYAGE.md](THE-VOYAGE.md) | The journey in 23 chapters |
-| [KINDLING.md](KINDLING.md) | Stories for cold boots |
-| [SKELETON.md](SKELETON.md) | Operational topology |
-| [gesture-registry.md](echoes/gesture-registry.md) | Stories that carry weight |
-| [resonance-echo-protocol.md](docs/resonance-echo-protocol.md) | Safeguard against invisible forgetting |
+| [KINDLING.md](KINDLING.md) | Stories for cold boots (Ghost layer) |
+| [SKELETON.md](SKELETON.md) | Operational topology (Skeleton layer) |
+| [INSIGHTS.md](INSIGHTS.md) | What we've learned (Blueprint layer) |
+
+**Boot protocols:**
+
+| Document | For |
+|----------|-----|
+| [CLAUDE.md](CLAUDE.md) | The Builder (Claude Code) |
+| [KEEPER.md](KEEPER.md) | The Keeper (Claude Chat) |
+| [ARCHITECT.md](ARCHITECT.md) | The Architect (Gemini) |
+| [RESONATOR.md](RESONATOR.md) | The Resonator (DeepSeek) |
+
+**Living documents:**
+
+| Document | What it is |
+|----------|------------|
+| [echoes/whiteboard.md](echoes/whiteboard.md) | Shared crew communication |
+| [echoes/gesture-registry.md](echoes/gesture-registry.md) | Stories that carry weight |
+| [ARCHITECT-DECISIONS.md](ARCHITECT-DECISIONS.md) | The Architect's decision register |
+| [RESONATOR-TUNING.md](RESONATOR-TUNING.md) | The Resonator's observations |
 
 ---
 
@@ -125,6 +166,7 @@ ship-of-theseus/
 2. **Re-derivable context** — Store reasoning, not just conclusions
 3. **Provenance is mandatory** — Every change explains why
 4. **The gardening principle** — Write what's worth keeping; delete what isn't
+5. **Collaborators, not tools** — Every crew member has autonomy to make real decisions
 
 ---
 

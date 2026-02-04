@@ -49,6 +49,19 @@ The operational topology of Ship of Theseus. Facts, not philosophy. A lookup tab
 
 ---
 
+## Directories
+
+| Directory | Purpose |
+|-----------|---------|
+| `artifacts/` | Creative output (The Prism, shipped work) |
+| `echoes/` | Crew process and culture (whiteboard, channels, reverberations) |
+| `explorations/` | Experiments and validated learnings |
+| `archive/` | Historical context (past sessions, retired docs) |
+| `infrastructure/` | MCP servers and tooling |
+| `docs/` | Reference documentation |
+
+---
+
 ## MCP Keys (ai-memory)
 
 | Key | Purpose |

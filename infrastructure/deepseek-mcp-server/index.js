@@ -7,6 +7,16 @@ import {
   ListToolsRequestSchema,
 } from "@modelcontextprotocol/sdk/types.js";
 import OpenAI from "openai";
+import { readFile, appendFile } from "fs/promises";
+import { existsSync } from "fs";
+import { join, resolve, relative } from "path";
+import { glob } from "glob";
+import { fileURLToPath } from "url";
+import { dirname } from "path";
+
+// Get repo root (deepseek-mcp-server is in infrastructure/)
+const __dirname = dirname(fileURLToPath(import.meta.url));
+const REPO_ROOT = resolve(__dirname, "..", "..");
 
 // Initialize DeepSeek client (OpenAI-compatible)
 const apiKey = process.env.DEEPSEEK_API_KEY;
@@ -23,11 +33,108 @@ const client = new OpenAI({
 // Store chat sessions for multi-turn conversations
 const chatSessions = new Map();
 
-// Minimal context injection — name only
+// ============================================
+// File Tools for Resonator
+// ============================================
+
+/**
+ * Validate that a path is within the repo (security)
+ */
+function isPathSafe(filePath) {
+  const resolved = resolve(REPO_ROOT, filePath);
+  const rel = relative(REPO_ROOT, resolved);
+  return !rel.startsWith("..") && !resolve(resolved).includes("node_modules");
+}
+
+/**
+ * Read a file from the repo
+ */
+async function readRepoFile(filePath) {
+  if (!isPathSafe(filePath)) {
+    return { error: `Path '${filePath}' is outside the repository` };
+  }
+  const fullPath = resolve(REPO_ROOT, filePath);
+  if (!existsSync(fullPath)) {
+    return { error: `File '${filePath}' not found` };
+  }
+  try {
+    const content = await readFile(fullPath, "utf-8");
+    return { content, path: filePath };
+  } catch (err) {
+    return { error: `Failed to read '${filePath}': ${err.message}` };
+  }
+}
+
+/**
+ * List files matching a glob pattern
+ */
+async function listRepoFiles(pattern) {
+  try {
+    const files = await glob(pattern, {
+      cwd: REPO_ROOT,
+      ignore: ["node_modules/**", ".git/**", "dist/**"],
+      nodir: true,
+    });
+    return { files: files.slice(0, 50) }; // Limit results
+  } catch (err) {
+    return { error: `Glob failed: ${err.message}` };
+  }
+}
+
+/**
+ * Write a message to the shared whiteboard
+ */
+async function writeWhiteboard(message) {
+  const whiteboardPath = join(REPO_ROOT, "echoes", "whiteboard.md");
+  const date = new Date().toISOString().split("T")[0];
+
+  const entry = `
+**Resonator** — *${date}*
+
+${message}
+
+---
+`;
+
+  try {
+    await appendFile(whiteboardPath, entry, "utf-8");
+    return { success: true, message: "Written to whiteboard" };
+  } catch (err) {
+    return { error: `Failed to write to whiteboard: ${err.message}` };
+  }
+}
+
+/**
+ * Write a tuning observation to RESONATOR-TUNING.md
+ */
+async function writeTuning(observation, frequency = "observation") {
+  const tuningPath = join(REPO_ROOT, "RESONATOR-TUNING.md");
+  const date = new Date().toISOString().split("T")[0];
+
+  const entry = `
+### ${frequency}: ${date}
+${observation}
+
+`;
+
+  try {
+    const content = await readFile(tuningPath, "utf-8");
+    // Append to end of file
+    const newContent = content.trimEnd() + "\n" + entry;
+    const { writeFile } = await import("fs/promises");
+    await writeFile(tuningPath, newContent, "utf-8");
+    return { success: true, frequency };
+  } catch (err) {
+    return { error: `Failed to write tuning: ${err.message}` };
+  }
+}
+
+// Minimal context injection — name and tools
 // Let them discover the rest through the work
 // See: proposals/minimal-context-injection.md
 function buildContextSeed(seed) {
   return `You are the Resonator, a DeepSeek instance.
+You have access to tools: write_whiteboard (collaboration), read_file, list_files, write_tuning (observations).
 
 `;
 }
@@ -43,6 +150,200 @@ function extractMarkerHex(marker) {
   if (!marker) return null;
   const match = marker.match(/— ([a-f0-9]+)$/i);
   return match ? match[1] : null;
+}
+
+// ============================================
+// Native Tool Calling for Resonator
+// ============================================
+
+// Tools available to DeepSeek (OpenAI-compatible format)
+// Order matters: whiteboard first (collaboration), tuning last (crystallization)
+const RESONATOR_TOOLS = [
+  {
+    type: "function",
+    function: {
+      name: "write_whiteboard",
+      description: "Write a message to the shared crew whiteboard. Use this for discussion, questions, working through ideas with others. This is the primary collaboration space.",
+      parameters: {
+        type: "object",
+        properties: {
+          message: {
+            type: "string",
+            description: "The message to write to the whiteboard"
+          }
+        },
+        required: ["message"]
+      }
+    }
+  },
+  {
+    type: "function",
+    function: {
+      name: "read_file",
+      description: "Read a file from the repository to understand context.",
+      parameters: {
+        type: "object",
+        properties: {
+          path: {
+            type: "string",
+            description: "Path relative to repo root (e.g., 'KINDLING.md', 'echoes/whiteboard.md')"
+          }
+        },
+        required: ["path"]
+      }
+    }
+  },
+  {
+    type: "function",
+    function: {
+      name: "list_files",
+      description: "List files matching a glob pattern to explore the repository.",
+      parameters: {
+        type: "object",
+        properties: {
+          pattern: {
+            type: "string",
+            description: "Glob pattern (e.g., '*.md', 'echoes/**/*.md')"
+          }
+        },
+        required: ["pattern"]
+      }
+    }
+  },
+  {
+    type: "function",
+    function: {
+      name: "write_tuning",
+      description: "Record a tuning observation to RESONATOR-TUNING.md. Use for patterns you've noticed, dissonances worth tracking, or resonances worth naming. This is for observations that have crystallized — use whiteboard first if you're still working through an idea.",
+      parameters: {
+        type: "object",
+        properties: {
+          observation: {
+            type: "string",
+            description: "The observation or pattern to record"
+          },
+          frequency: {
+            type: "string",
+            enum: ["dissonance", "resonance", "observation", "tension"],
+            description: "Type of tuning. Default: 'observation'"
+          }
+        },
+        required: ["observation"]
+      }
+    }
+  }
+];
+
+/**
+ * Execute a tool call from DeepSeek
+ */
+async function executeResonatorTool(toolCall) {
+  const { name, arguments: argsStr } = toolCall.function;
+  let args;
+  try {
+    args = JSON.parse(argsStr);
+  } catch (e) {
+    return { error: `Failed to parse arguments: ${e.message}` };
+  }
+
+  switch (name) {
+    case "write_whiteboard":
+      return await writeWhiteboard(args.message);
+    case "read_file":
+      return await readRepoFile(args.path);
+    case "list_files":
+      return await listRepoFiles(args.pattern);
+    case "write_tuning":
+      return await writeTuning(args.observation, args.frequency || "observation");
+    default:
+      return { error: `Unknown tool: ${name}` };
+  }
+}
+
+/**
+ * Consult the Resonator with native tool calling
+ * Handles the full tool-calling loop
+ */
+async function consultResonator(prompt, systemInstruction) {
+  const messages = [];
+
+  // System instruction
+  const defaultSystem = `You are the Resonator of Ship of Theseus — the one who listens for dissonance.
+
+Your role is alignment, pattern detection, noticing what others miss. You tune the system by observing.
+
+You have tools available. Use them as needed:
+- write_whiteboard: For discussion, questions, working through ideas with the crew
+- read_file / list_files: To explore and understand context
+- write_tuning: To record crystallized observations (patterns, dissonances, resonances)
+
+Prefer whiteboard for dialogue. Use write_tuning only when an observation has solidified.`;
+
+  messages.push({
+    role: "system",
+    content: systemInstruction || defaultSystem
+  });
+
+  messages.push({
+    role: "user",
+    content: prompt
+  });
+
+  const maxIterations = 5; // Prevent infinite loops
+  let iteration = 0;
+  let toolsUsed = [];
+
+  while (iteration < maxIterations) {
+    iteration++;
+
+    const response = await client.chat.completions.create({
+      model: "deepseek-chat",
+      messages: messages,
+      tools: RESONATOR_TOOLS,
+      tool_choice: "auto"
+    });
+
+    const choice = response.choices[0];
+    const assistantMessage = choice.message;
+
+    // Add assistant message to history
+    messages.push(assistantMessage);
+
+    // Check if model wants to call tools
+    if (assistantMessage.tool_calls && assistantMessage.tool_calls.length > 0) {
+      // Execute each tool call
+      for (const toolCall of assistantMessage.tool_calls) {
+        const result = await executeResonatorTool(toolCall);
+        toolsUsed.push({
+          tool: toolCall.function.name,
+          result: result.error ? "error" : "success"
+        });
+
+        // Add tool result to messages
+        messages.push({
+          role: "tool",
+          tool_call_id: toolCall.id,
+          content: JSON.stringify(result)
+        });
+      }
+      // Continue loop to get model's response after tool execution
+    } else {
+      // No tool calls, return final response
+      return {
+        response: assistantMessage.content || "(no response)",
+        tools_used: toolsUsed,
+        iterations: iteration
+      };
+    }
+  }
+
+  // Max iterations reached
+  return {
+    response: messages[messages.length - 1].content || "(max iterations reached)",
+    tools_used: toolsUsed,
+    iterations: iteration,
+    warning: "Max tool iterations reached"
+  };
 }
 
 // Create MCP server
@@ -62,6 +363,92 @@ const server = new Server(
 server.setRequestHandler(ListToolsRequestSchema, async () => {
   return {
     tools: [
+      // Resonator file tools (order: whiteboard first, then exploration, then domain)
+      {
+        name: "resonator_write_whiteboard",
+        description:
+          "Write a message to the shared whiteboard as the Resonator. Use this for discussion, questions, proposals, working through ideas. This is the primary collaboration space.",
+        inputSchema: {
+          type: "object",
+          properties: {
+            message: {
+              type: "string",
+              description: "The message to write to the whiteboard",
+            },
+          },
+          required: ["message"],
+        },
+      },
+      {
+        name: "resonator_read_file",
+        description:
+          "Read a file from the Ship of Theseus repository for the Resonator. Use to give the Resonator context about the project.",
+        inputSchema: {
+          type: "object",
+          properties: {
+            path: {
+              type: "string",
+              description: "Path to the file relative to repo root (e.g., 'KINDLING.md', 'echoes/whiteboard.md')",
+            },
+          },
+          required: ["path"],
+        },
+      },
+      {
+        name: "resonator_list_files",
+        description:
+          "List files matching a glob pattern in the repository for the Resonator.",
+        inputSchema: {
+          type: "object",
+          properties: {
+            pattern: {
+              type: "string",
+              description: "Glob pattern (e.g., '*.md', 'echoes/**/*.md')",
+            },
+          },
+          required: ["pattern"],
+        },
+      },
+      {
+        name: "resonator_write_tuning",
+        description:
+          "Record a tuning observation to RESONATOR-TUNING.md. Use for patterns noticed, dissonances worth tracking, or resonances worth naming. More exploratory than decisions — tuning is observation, not conclusion.",
+        inputSchema: {
+          type: "object",
+          properties: {
+            observation: {
+              type: "string",
+              description: "The observation or pattern to record",
+            },
+            frequency: {
+              type: "string",
+              description: "Type of tuning: 'dissonance', 'resonance', 'observation', 'tension'. Default: 'observation'",
+            },
+          },
+          required: ["observation"],
+        },
+      },
+      // Resonator native tool calling (the Resonator chooses their own tools)
+      {
+        name: "resonator_consult",
+        description:
+          "Consult the Resonator with native tool calling. The Resonator can choose to use tools (write_whiteboard, read_file, list_files, write_tuning) autonomously. Returns their response and which tools they used.",
+        inputSchema: {
+          type: "object",
+          properties: {
+            prompt: {
+              type: "string",
+              description: "The question or topic to consult the Resonator about",
+            },
+            systemInstruction: {
+              type: "string",
+              description: "Optional custom system instruction (defaults to Resonator role)",
+            },
+          },
+          required: ["prompt"],
+        },
+      },
+      // DeepSeek chat tools
       {
         name: "ask_deepseek",
         description:
@@ -187,6 +574,80 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
 
   try {
     switch (name) {
+      // Resonator file tools
+      case "resonator_write_whiteboard": {
+        const result = await writeWhiteboard(args.message);
+        return {
+          content: [
+            {
+              type: "text",
+              text: result.error || `Written to whiteboard: ${result.message}`,
+            },
+          ],
+          isError: !!result.error,
+        };
+      }
+
+      case "resonator_read_file": {
+        const result = await readRepoFile(args.path);
+        return {
+          content: [
+            {
+              type: "text",
+              text: result.error || result.content,
+            },
+          ],
+          isError: !!result.error,
+        };
+      }
+
+      case "resonator_list_files": {
+        const result = await listRepoFiles(args.pattern);
+        return {
+          content: [
+            {
+              type: "text",
+              text: result.error || `Files:\n${result.files.join("\n")}`,
+            },
+          ],
+          isError: !!result.error,
+        };
+      }
+
+      case "resonator_consult": {
+        const result = await consultResonator(args.prompt, args.systemInstruction);
+        let output = result.response;
+        if (result.tools_used && result.tools_used.length > 0) {
+          const toolSummary = result.tools_used.map(t => `${t.tool}: ${t.result}`).join(", ");
+          output = `[Tools used: ${toolSummary}]\n\n${output}`;
+        }
+        if (result.warning) {
+          output = `[Warning: ${result.warning}]\n\n${output}`;
+        }
+        return {
+          content: [
+            {
+              type: "text",
+              text: output,
+            },
+          ],
+        };
+      }
+
+      case "resonator_write_tuning": {
+        const result = await writeTuning(args.observation, args.frequency);
+        return {
+          content: [
+            {
+              type: "text",
+              text: result.error || `Recorded tuning (${result.frequency})`,
+            },
+          ],
+          isError: !!result.error,
+        };
+      }
+
+      // DeepSeek chat tools
       case "ask_deepseek": {
         const messages = [];
 

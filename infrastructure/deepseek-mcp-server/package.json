@@ -10,11 +10,17 @@
   "scripts": {
     "start": "node index.js"
   },
-  "keywords": ["mcp", "deepseek", "ai", "reasoning"],
+  "keywords": [
+    "mcp",
+    "deepseek",
+    "ai",
+    "reasoning"
+  ],
   "author": "",
   "license": "ISC",
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.25.3",
+    "glob": "^13.0.1",
     "openai": "^4.77.0"
   }
 }
