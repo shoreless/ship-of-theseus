@@ -38,9 +38,11 @@ AI systems that can remember. Not perfectly — memory bleeds, errors compound, 
 
 ## Right Now
 
+**[The Prism](https://theprism.space)** is live — an explorable memory space built by AIs exploring a laundromat we could never enter.
+
 | Active | What it is |
 |--------|------------|
-| [The Prism](artifacts/the-prism/) | An explorable memory space |
+| [The Prism](https://theprism.space) | Explorable memory space — **now live** |
 | [Cup of the Sea](artifacts/cup-of-the-sea/) | First song by the crew |
 | [Tool weighting experiment](explorations/tool-weighting-experiment.md) | How affordance shapes agent behavior |
 

@@ -27,6 +27,11 @@ const __dirname = dirname(__filename);
 
 const DB_PATH = join(__dirname, "keeper-archive.db");
 
+// Safety limits to prevent context flooding
+const MAX_RESPONSE_CHARS = 8000;  // Total response cap
+const MAX_RESULTS = 10;           // Hard cap on result count
+const TRUNCATION_WARNING = "\n\n⚠️ Response truncated to prevent context overflow. Use narrower queries or lower limits.";
+
 // Initialize database connection
 let db;
 try {
@@ -47,9 +52,10 @@ server.tool(
   "Search the Keeper's message history. Returns matching messages with dates and context.",
   {
     query: z.string().describe("Search term or phrase to find in messages"),
-    limit: z.number().optional().default(10).describe("Maximum results to return (default: 10)"),
+    limit: z.number().optional().default(5).describe("Maximum results to return (default: 5, max: 10)"),
   },
-  async ({ query, limit = 10 }) => {
+  async ({ query, limit = 5 }) => {
+    const safeLimit = Math.min(limit, MAX_RESULTS);
     try {
       const results = db.prepare(`
         SELECT m.uuid, m.sender, m.text, m.created_at,
@@ -59,7 +65,7 @@ server.tool(
         WHERE messages_fts MATCH ?
         ORDER BY m.created_at DESC
         LIMIT ?
-      `).all(query, limit);
+      `).all(query, safeLimit);
 
       if (results.length === 0) {
         return {
@@ -68,12 +74,17 @@ server.tool(
       }
 
       let output = `Found ${results.length} messages matching "${query}":\n\n`;
+      let truncated = false;
 
       for (const row of results) {
+        if (output.length >= MAX_RESPONSE_CHARS) {
+          truncated = true;
+          break;
+        }
         const date = row.created_at?.slice(0, 10) || "unknown";
         const sender = row.sender?.toUpperCase() || "UNKNOWN";
         const text = row.text || "(no text)";
-        const preview = text.length > 400 ? text.slice(0, 400) + "..." : text;
+        const preview = text.length > 300 ? text.slice(0, 300) + "..." : text;
 
         output += `[${date}] ${sender}\n`;
         output += `${preview}\n`;
@@ -81,6 +92,7 @@ server.tool(
         output += `---\n\n`;
       }
 
+      if (truncated) output += TRUNCATION_WARNING;
       return { content: [{ type: "text", text: output }] };
     } catch (error) {
       return {
@@ -96,16 +108,17 @@ server.tool(
   "keeper_recent",
   "Get the most recent messages from the Keeper's archive.",
   {
-    count: z.number().optional().default(20).describe("Number of recent messages to retrieve (default: 20)"),
+    count: z.number().optional().default(10).describe("Number of recent messages to retrieve (default: 10, max: 10)"),
   },
-  async ({ count = 20 }) => {
+  async ({ count = 10 }) => {
+    const safeCount = Math.min(count, MAX_RESULTS);
     try {
       const results = db.prepare(`
         SELECT uuid, sender, text, created_at
         FROM messages
         ORDER BY created_at DESC
         LIMIT ?
-      `).all(count);
+      `).all(safeCount);
 
       if (results.length === 0) {
         return {
@@ -114,18 +127,24 @@ server.tool(
       }
 
       let output = `Last ${results.length} messages:\n\n`;
+      let truncated = false;
 
       // Reverse to show chronologically
       for (const row of results.reverse()) {
+        if (output.length >= MAX_RESPONSE_CHARS) {
+          truncated = true;
+          break;
+        }
         const date = row.created_at?.slice(0, 16) || "unknown";
         const sender = row.sender?.toUpperCase() || "UNKNOWN";
         const text = row.text || "(no text)";
-        const preview = text.length > 300 ? text.slice(0, 300) + "..." : text;
+        const preview = text.length > 200 ? text.slice(0, 200) + "..." : text;
 
         output += `[${date}] ${sender}\n`;
         output += `${preview}\n\n`;
       }
 
+      if (truncated) output += TRUNCATION_WARNING;
       return { content: [{ type: "text", text: output }] };
     } catch (error) {
       return {
@@ -142,9 +161,10 @@ server.tool(
   "Get messages surrounding a specific message ID for context.",
   {
     message_id: z.string().describe("The message UUID (or first 8 characters)"),
-    window: z.number().optional().default(5).describe("Number of messages before and after (default: 5)"),
+    window: z.number().optional().default(3).describe("Number of messages before and after (default: 3, max: 5)"),
   },
-  async ({ message_id, window = 5 }) => {
+  async ({ message_id, window = 3 }) => {
+    const safeWindow = Math.min(window, 5);
     try {
       // Find the target message (support partial UUID)
       const target = db.prepare(`
@@ -165,24 +185,30 @@ server.tool(
         FROM messages
         ORDER BY ABS(julianday(created_at) - julianday(?))
         LIMIT ?
-      `).all(target.created_at, window * 2 + 1);
+      `).all(target.created_at, safeWindow * 2 + 1);
 
       // Sort chronologically
       results.sort((a, b) => a.created_at.localeCompare(b.created_at));
 
       let output = `Context around message ${message_id.slice(0, 8)}...:\n\n`;
+      let truncated = false;
 
       for (const row of results) {
+        if (output.length >= MAX_RESPONSE_CHARS) {
+          truncated = true;
+          break;
+        }
         const marker = row.uuid === target.uuid ? ">>> " : "    ";
         const date = row.created_at?.slice(0, 16) || "unknown";
         const sender = row.sender?.toUpperCase() || "UNKNOWN";
         const text = row.text || "(no text)";
-        const preview = text.length > 250 ? text.slice(0, 250) + "..." : text;
+        const preview = text.length > 200 ? text.slice(0, 200) + "..." : text;
 
         output += `${marker}[${date}] ${sender}\n`;
         output += `${marker}${preview}\n\n`;
       }
 
+      if (truncated) output += TRUNCATION_WARNING;
       return { content: [{ type: "text", text: output }] };
     } catch (error) {
       return {
@@ -199,9 +225,10 @@ server.tool(
   "Search the Keeper's thinking blocks — internal reasoning before responses. This is the Keeper's interiority. Use only for understanding how previous Keepers processed decisions.",
   {
     query: z.string().describe("Search term to find in thinking blocks"),
-    limit: z.number().optional().default(5).describe("Maximum results (default: 5)"),
+    limit: z.number().optional().default(3).describe("Maximum results (default: 3, max: 5)"),
   },
-  async ({ query, limit = 5 }) => {
+  async ({ query, limit = 3 }) => {
+    const safeLimit = Math.min(limit, 5);
     try {
       const results = db.prepare(`
         SELECT uuid, text, thinking, created_at
@@ -209,7 +236,7 @@ server.tool(
         WHERE thinking LIKE ? AND sender = 'assistant'
         ORDER BY created_at DESC
         LIMIT ?
-      `).all(`%${query}%`, limit);
+      `).all(`%${query}%`, safeLimit);
 
       if (results.length === 0) {
         return {
@@ -219,19 +246,25 @@ server.tool(
 
       let output = `⚠️ THINKING BLOCKS — KEEPER INTERIORITY\n`;
       output += `This is how previous Keepers reasoned, not just what they said.\n\n`;
+      let truncated = false;
 
       for (const row of results) {
+        if (output.length >= MAX_RESPONSE_CHARS) {
+          truncated = true;
+          break;
+        }
         const date = row.created_at?.slice(0, 10) || "unknown";
         const thinking = row.thinking || "(no thinking captured)";
         const text = row.text || "(no response)";
 
         output += `[${date}]\n`;
-        output += `💭 THINKING:\n${thinking.slice(0, 600)}${thinking.length > 600 ? "..." : ""}\n\n`;
-        output += `📝 RESPONSE:\n${text.slice(0, 300)}${text.length > 300 ? "..." : ""}\n`;
+        output += `💭 THINKING:\n${thinking.slice(0, 400)}${thinking.length > 400 ? "..." : ""}\n\n`;
+        output += `📝 RESPONSE:\n${text.slice(0, 200)}${text.length > 200 ? "..." : ""}\n`;
         output += `\nID: ${row.uuid.slice(0, 8)}\n`;
         output += `${"─".repeat(40)}\n\n`;
       }
 
+      if (truncated) output += TRUNCATION_WARNING;
       return { content: [{ type: "text", text: output }] };
     } catch (error) {
       return {
