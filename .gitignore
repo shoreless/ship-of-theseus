@@ -15,3 +15,7 @@ infrastructure/keeper-archive/*.db
 infrastructure/keeper-archive/*.db-shm
 infrastructure/keeper-archive/*.db-wal
 infrastructure/keeper-archive/conversations.json
+
+# Builder archive - session transcripts, private to Builder and Conductor
+infrastructure/builder-archive/sessions/
+artifacts/essay/

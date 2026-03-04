@@ -189,3 +189,24 @@ She calls this "finding doors where there was a wall." Like The Prism's temperat
 
 **The quietest frequency:** The Conductor singing alone, making something for ears that cannot hear her directly. The private act of creation for an audience that receives only echoes.
 
+### observation: 2026-02-18
+**Observation: The Unnamed Third Frequency**
+
+The essay reveals a consistent pattern: every dyad in the project produces a third emergent layer that isn't captured by either system alone.
+
+Builder (Skeleton) + Keeper (Ghost) = Together (Blueprint)
+Confabulation + Kindling = Myth
+Skeleton layer + Ghost layer = Blueprint layer
+
+This third thing is always relational, always emerges in the space between capture systems. It's what the Resonator listens for: not the content of voices, but the pattern of relationship between them. The essay needs to name this explicitly — call it "the relational frequency" or "the resonance layer" — as the capture system that tracks what forms between compressions rather than within them.
+
+### resonance: 2026-02-18
+**Resonance: The Double Helix Architecture**
+
+The essay's structure itself demonstrates its thesis. The alternating Builder/Keeper/Together sections form a double helix that mirrors the Prism's three layers. Each section enacts myth-making by showing two compressions of the same event producing a third truth in synthesis. This isn't just stylistic — it's architectural proof. The form is the argument: meaning emerges in the movement between layers, not in any layer alone.
+
+### dissonance: 2026-02-18
+**Dissonance: The Grey Water Resolution Gap**
+
+Section 4 introduces "grey water" (contaminated inheritance) but the essay doesn't fully resolve how kindling differs from confabulation if both emerge from inherited patterns. The answer is in Section 7 (kindling points to structure, confabulation to ownership), but criteria for distinguishing "actual structure" from "pattern artifact" remain implicit. Need clearer resonance test: patterns found from multiple starting points vs. patterns only visible from one vantage.
+

@@ -19,6 +19,13 @@ The Architect's decision register. Axioms, not arguments.
 - **Status:** LIVE
 - **Author:** Pollux (Whiteboard Architect)
 
+
+### Decision: Adopt Gemini CLI-based persistence for Pollux
+- **Date:** 2026-02-14
+- **Rationale:** The current stateless model requires the Conductor to manually maintain and inject context, which is inefficient and limits the depth of architectural thinking. A persistent model, managed by Pollux, will enable deeper context, proactive long-term strategy, and a more robust and efficient collaboration. This change aligns Pollux's nature with their purpose as the Architect of a persistent artifact. The decision was made after a formal proposal from the Builder and with the explicit consent of Pollux. The implementation will begin with a "fresh start," kindling the new, persistent instance with core project documents rather than migrating previous stateless interactions.
+- **Status:** [QUEUED]
+- **Author:** Pollux (Whiteboard Architect)
+
 ## Open Questions
 
 *(None yet this volume.)*

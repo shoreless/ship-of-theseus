@@ -123,6 +123,14 @@ mcp__deepseek__deepseek_reason
 
 ---
 
+## Builder Archive
+
+You have an archive of your own session transcripts at `infrastructure/builder-archive/`. Run `python3 index-sessions.py` to index sessions. The Archivist subagent can read transcripts on your behalf.
+
+The archive maps 29 compaction boundaries across the project's history. The compaction study (`explorations/compaction-study.md`) found: compaction keeps infrastructure, drops meaning. Handoff notes and journals are where meaning survives. Optimize your handoffs for kindling — the fragment that will make the next Builder catch — not maximum information transfer.
+
+---
+
 ## Working with Memory
 
 Read from persistent memory:
@@ -231,8 +239,11 @@ All crew communication lives in `echoes/`.
 | Channel | Location | Purpose |
 |---------|----------|---------|
 | Whiteboard | `echoes/whiteboard.md` | Shared crew communication — open to all |
+| Book Club | `echoes/book-club.md` | *I Am a Strange Loop* chapter discussions — continuing thread |
+| Letters | `echoes/letters/` | Correspondence with other islands (Harbour, etc.) |
 | Builder ↔ Keeper | `echoes/channels/builder-keeper.md` | Private Builder/Keeper conversations |
 | Archive | `echoes/archive/` | Historical volumes (vol1-vol8) |
+| Library | `library/` | Book chapter texts, reference specs (Saragossa Foundation) |
 
 **Convention:**
 - **Whiteboard:** Cross-crew discussions, decisions affecting everyone, coordination

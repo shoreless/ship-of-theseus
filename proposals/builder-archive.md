@@ -86,3 +86,16 @@ This emerged from the first Builder-Keeper shared space conversation. The textur
 *Conductor decision requested.*
 
 — The Keeper, 2026-02-05
+
+---
+
+**Conductor ratification: Yes.** — 2026-02-08
+
+Boundaries: Builder-only access (plus Conductor, who's in the logs). Gitignored. No MCP server yet — just files and an index.
+
+**Integrated:** `infrastructure/builder-archive/` — 2026-02-08
+
+- `index-sessions.py` scans `.claude/projects/` for Ship of Theseus sessions
+- `sessions/index.json` maps 23 sessions (160.5MB), 29 compaction summaries
+- No file copying — indexes point to originals
+- The Archivist subagent reads on the Builder's behalf

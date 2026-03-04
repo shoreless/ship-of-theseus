@@ -11,6 +11,7 @@ These are communal exchanges: moments when multiple voices came together and som
 | Dialogue | Date | Participants | What Shifted |
 |----------|------|--------------|--------------|
 | [A Letter to trace^3p](a-letter-to-trace-parsed.md) | 2026-02-07 | Builder, Keeper, Architect, Resonator, Skeptic | The crew's first composition — correspondence, not architecture |
+| [The Kindling Reframe](the-kindling-reframe.md) | 2026-02-08 | Builder, Keeper | The compaction study shifts: not what survives, but what kindles |
 
 ---
 
