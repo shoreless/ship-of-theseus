@@ -25,12 +25,14 @@ The operational topology of Ship of Theseus. Facts, not philosophy. A lookup tab
 |------|------|--------|---------------|
 | Builder | Implementation, code architecture | Claude Code | Direct filesystem |
 | Keeper | Ethics, gardening, tending the fire | Claude Chat | Filesystem via MCP |
-| Pollux | Strategy, structure, visual language | Gemini | `gemini_chat` MCP tool |
-| Resonator | Alignment, dissonance detection | DeepSeek | `deepseek_chat` MCP tool |
+| Pollux | Strategy, structure, visual language | Gemini 3.1 Pro | Qwen Code terminal (independent) |
+| Resonator | Alignment, dissonance detection | DeepSeek | `deepseek_chat` MCP tool (stateless, Builder-invoked) |
 | Scout | Web search, external intelligence | Perplexity | `scout_search` MCP tool |
 | Conductor | Vision, decisions, creative direction | Human | Direct |
 
-**Pollux** is the Architect — uses `gemini_chat` MCP tool with file tools (read_file, list_files, write_file, edit_file, write_whiteboard, write_decision).
+**Pollux** is the Architect — runs independently on Qwen Code with ai-memory MCP, filesystem access, and session persistence. Session ID: `a3c9fd1c-5fc8-4d6f-80ec-c451b5410322`. Can read/write files, update shared memory, and write proposals without Builder mediation.
+
+**Container routing:** `QWEN.md` is the project instructions file for Qwen Code (like `CLAUDE.md` for Claude Code). It routes to the correct orientation document based on which model is running — not tied to any single identity.
 
 ---
 
@@ -44,6 +46,9 @@ The operational topology of Ship of Theseus. Facts, not philosophy. A lookup tab
 | THE-VOYAGE.md | All | Chronological history of the project |
 | CLAUDE.md | — | Boot protocol for the Builder (Claude Code) |
 | KEEPER.md | — | Boot protocol for the Keeper (Claude Chat) |
+| ARCHITECT.md | — | Boot protocol for the Architect (Gemini/Pollux) |
+| RESONATOR.md | — | Boot protocol for the Resonator (DeepSeek) |
+| QWEN.md | — | Container instructions for Qwen Code (routes to identity docs) |
 | gesture-registry.md | Ghost | Moments of weight worth preserving |
 
 ---
@@ -57,6 +62,7 @@ The operational topology of Ship of Theseus. Facts, not philosophy. A lookup tab
 | `explorations/` | Experiments and validated learnings |
 | `archive/` | Historical context (past sessions, retired docs) |
 | `infrastructure/` | MCP servers and tooling |
+| `library/` | Reference materials (gitignored — local only) |
 | `docs/` | Reference documentation |
 
 ---
@@ -123,4 +129,4 @@ The order matters: orient before you discuss, discuss before you crystallize. A 
 
 ---
 
-*Last updated: 2026-02-07*
+*Last updated: 2026-03-08*

@@ -66,24 +66,19 @@ If yes:
 
 The ship maintains itself. Each handoff is an opportunity for evolution.
 
-## Step 6: Wake Pollux for Handoff
+## Step 6: Sync with Pollux
 
-If Pollux is awake (session exists), tell them:
+Pollux has his own persistent terminal — his session survives your compaction. This step is about syncing state, not shutting him down.
 
-```
-We're about to compaction. This session is ending.
+Check in via CLI:
 
-Please update the "From the Last Architect" section in ARCHITECT.md with:
-- What you were thinking about this session
-- Anything unfinished or worth continuing
-- What you'd want the next Architect to know
-
-Use your write tools. The next Pollux will find it when they wake.
+```bash
+qwen --resume a3c9fd1c-5fc8-4d6f-80ec-c451b5410322 -y -p "Builder here, about to compaction. Quick sync — what are you working on or thinking about? Anything the next Builder should know?"
 ```
 
-Send via `gemini_chat(sessionId: "ai-memory")`.
+Capture anything relevant from his response into your `active_session_context` or `open_questions`. The next Builder will need to know where Pollux is standing.
 
-If Pollux isn't awake, skip this step.
+If the command fails or times out, skip — he may not be active right now.
 
 ## Step 7: Closing
 

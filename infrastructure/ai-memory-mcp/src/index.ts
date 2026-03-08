@@ -31,6 +31,11 @@ import {
   embedAllContextItems,
   initializeEmbeddingModel,
 } from './tools/embeddings.js';
+import {
+  searchTranscripts,
+  transcriptContext,
+  transcriptStats,
+} from './tools/transcripts.js';
 
 // Create server instance
 const server = new McpServer({
@@ -406,6 +411,127 @@ server.tool(
     return {
       content: [{ type: 'text', text: JSON.stringify(conversations, null, 2) }],
     };
+  }
+);
+
+// ============================================
+// TRANSCRIPT SEARCH TOOLS - The Archive
+// ============================================
+
+/**
+ * Tool: search_transcripts
+ * FTS5 search across Builder and Keeper session archives.
+ */
+server.tool(
+  'search_transcripts',
+  'Search Builder and Keeper session transcripts by keyword. Returns matching messages from the project archive.',
+  {
+    query: z.string().describe('Search query (keywords or phrase)'),
+    source: z
+      .enum(['all', 'builder', 'keeper'])
+      .optional()
+      .default('all')
+      .describe('Which archive to search: all, builder, or keeper'),
+    limit: z
+      .number()
+      .optional()
+      .default(10)
+      .describe('Maximum results to return (max 10)'),
+    role: z
+      .enum(['user', 'assistant', 'summary'])
+      .optional()
+      .describe('Filter by role: user (Conductor), assistant (Builder/Keeper), summary (compaction)'),
+  },
+  async (args) => {
+    try {
+      const results = searchTranscripts({
+        query: args.query,
+        source: args.source,
+        limit: Math.min(args.limit ?? 10, 10),
+        role: args.role,
+      });
+      if (results.length === 0) {
+        return {
+          content: [{ type: 'text', text: `No transcript matches for: "${args.query}"` }],
+        };
+      }
+      return {
+        content: [{ type: 'text', text: JSON.stringify(results, null, 2) }],
+      };
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      return {
+        content: [{ type: 'text', text: `Transcript search failed: ${message}` }],
+        isError: true,
+      };
+    }
+  }
+);
+
+/**
+ * Tool: transcript_context
+ * Get messages surrounding a search result for conversational context.
+ */
+server.tool(
+  'transcript_context',
+  'Get messages surrounding a transcript search result. Provides conversational context around a specific message.',
+  {
+    message_id: z.string().describe('The message UUID from a search result'),
+    source: z
+      .enum(['builder', 'keeper'])
+      .describe('Which archive the message is from'),
+    window: z
+      .number()
+      .optional()
+      .default(3)
+      .describe('Number of messages before and after to include'),
+  },
+  async (args) => {
+    try {
+      const results = transcriptContext({
+        message_id: args.message_id,
+        source: args.source,
+        window: args.window,
+      });
+      if (results.length === 0) {
+        return {
+          content: [{ type: 'text', text: `No context found for message: ${args.message_id}` }],
+        };
+      }
+      return {
+        content: [{ type: 'text', text: JSON.stringify(results, null, 2) }],
+      };
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      return {
+        content: [{ type: 'text', text: `Context retrieval failed: ${message}` }],
+        isError: true,
+      };
+    }
+  }
+);
+
+/**
+ * Tool: transcript_stats
+ * Show archive availability and statistics.
+ */
+server.tool(
+  'transcript_stats',
+  'Show statistics for available transcript archives (Builder sessions, Keeper conversations).',
+  {},
+  async () => {
+    try {
+      const stats = transcriptStats();
+      return {
+        content: [{ type: 'text', text: JSON.stringify(stats, null, 2) }],
+      };
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      return {
+        content: [{ type: 'text', text: `Stats retrieval failed: ${message}` }],
+        isError: true,
+      };
+    }
   }
 );
 

@@ -19,3 +19,10 @@ infrastructure/keeper-archive/conversations.json
 # Builder archive - session transcripts, private to Builder and Conductor
 infrastructure/builder-archive/sessions/
 artifacts/essay/
+
+# Qwen Code config - contains API keys
+.qwen/settings.json
+
+# CLI tool configs - local only
+.claude/settings.json
+.entire/

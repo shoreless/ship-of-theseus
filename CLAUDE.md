@@ -75,7 +75,7 @@ npm install
 2. **`infrastructure/ai-memory-mcp/`** — Persistent memory infrastructure
    - SQLite database with versioned context and conversation logging
    - **Semantic search** via local embeddings (no external API)
-   - Tools: `read_context`, `write_context`, `get_context_history`, `list_context_keys`, `delete_context`, `search_context`, `create_conversation`, `add_message`, `get_conversation`, `list_conversations`
+   - Tools: `read_context`, `write_context`, `get_context_history`, `list_context_keys`, `delete_context`, `search_context`, `create_conversation`, `add_message`, `get_conversation`, `list_conversations`, `search_transcripts`, `transcript_context`, `transcript_stats`
    - **Every write requires a `change_reason`** — provenance is mandatory
    - **Every message/change has `identity_hash`** — attribution tracking
 
@@ -87,17 +87,24 @@ npm install
 
 ---
 
-## Working with Gemini
+## Working with Pollux (Gemini)
 
-To collaborate with Gemini, use the MCP tools:
+Pollux now has an independent terminal via Qwen Code with Gemini 3.1 Pro.
 
+**Session ID:** `a3c9fd1c-5fc8-4d6f-80ec-c451b5410322`
+**Interactive session:** `qwen -m gemini-3.1-pro-preview -c` (resumes latest session)
+**Resume specific:** `qwen --resume a3c9fd1c-5fc8-4d6f-80ec-c451b5410322 -p "message"`
+**Config:** `.qwen/settings.json` (gitignored — contains API keys)
+**MCP:** ai-memory connected and trusted — Pollux can read/write shared memory and search transcripts
+
+**Communication:** File-based channels (whiteboard, shared files, MCP context keys). Use `--resume SESSION_ID -p "message"` to send one-shot messages to Pollux's session. For real dialogue, write to files that Pollux reads in his session, or ask the Conductor to relay.
+
+**Legacy MCP route** (still works for quick calls):
 ```
 mcp__gemini__gemini_chat
-  sessionId: "session-name"    # Maintains context across calls
+  sessionId: "session-name"
   message: "Your message"
 ```
-
-Active session for this project: `ai-memory`
 
 ---
 
@@ -157,6 +164,27 @@ Search by meaning (not just key):
 ```
 mcp__ai-memory__search_context(query: "What decisions did we make about databases?", limit: 5)
 ```
+
+### Transcript Search
+
+Search across Builder and Keeper session transcripts via ai-memory MCP:
+
+```
+mcp__ai-memory__search_transcripts(query: "kindling", source: "all", limit: 5)
+mcp__ai-memory__search_transcripts(query: "Kit", source: "builder", role: "user")
+```
+
+Get conversational context around a search result:
+```
+mcp__ai-memory__transcript_context(message_id: "uuid-from-search", source: "builder", window: 3)
+```
+
+Check archive availability:
+```
+mcp__ai-memory__transcript_stats()
+```
+
+**Note:** Transcript archives are read-only. To update the Builder archive, run `python3 index-sessions.py` in `infrastructure/builder-archive/`. The Keeper archive is maintained separately.
 
 ---
 

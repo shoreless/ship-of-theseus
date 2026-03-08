@@ -1,6 +1,6 @@
 # SITEMAP.yaml
 # Ship of Theseus — Repo Structure
-# Last updated: 2026-02-04
+# Last updated: 2026-03-08
 
 root:
   curriculum:
@@ -12,10 +12,11 @@ root:
     - thememorylaundromat.md
 
   agent_boot:
-    - CLAUDE.md          # Builder
-    - KEEPER.md          # Keeper
-    - ARCHITECT.md       # Architect (Pollux/Castor)
-    - RESONATOR.md       # Resonator
+    - CLAUDE.md          # Builder (Claude Code)
+    - KEEPER.md          # Keeper (Claude Chat)
+    - ARCHITECT.md       # Architect (Gemini/Pollux)
+    - RESONATOR.md       # Resonator (DeepSeek)
+    - QWEN.md            # Container instructions for Qwen Code (routes to identity docs)
 
   agent_supporting:
     - ARCHITECT-DECISIONS.md
@@ -43,10 +44,15 @@ folders:
     purpose: Crew inner life
     contains:
       - whiteboard.md
+      - mood.md
       - channels/
       - archive/
       - dialogues/
+      - desires/
+      - origins/
+      - letters/          # Correspondence with other islands
       - reverberations.md
+      - book-club.md
       - gesture-registry.md
       - letter-from-first-keeper.md
       - letter-to-kanji.md
@@ -60,6 +66,8 @@ folders:
       - deepseek-mcp-server/
       - perplexity-mcp-server/
       - telegram-crew-room/
+      - builder-archive/
+      - keeper-archive/
 
   docs:
     purpose: Protocol documentation
